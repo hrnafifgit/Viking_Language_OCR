@@ -4,6 +4,7 @@
 <div align="center">
 
 ![Project Status](https://img.shields.io/badge/Status-Complete-emerald?style=for-the-badge)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 ![Deep Learning](https://img.shields.io/badge/AI-YOLOv8%20Epigraphy-critical?style=for-the-badge&logo=pytorch)
 ![Platform](https://img.shields.io/badge/Stack-Python%20%7C%20Flutter%20%7C%20FastAPI-blue?style=for-the-badge)
 ![Domain](https://img.shields.io/badge/Domain-Digital%20Archaeology-amber?style=for-the-badge)
@@ -114,6 +115,12 @@ flutter run
 2. **استخراج الخصائص الحافية:** التركيز على عمق الحفر الحجري للأحرف.
 3. **التصنيف والتطبيع المكاني:** مطابقة شكل الرمز الروني مع فئته الصحيحة (Elder Futhark / Younger Futhark).
 4. **العرض الأثري الموثق:** تقديم التقرير التحليلي للنقش مع الدلالات الصوتية والتاريخية لكل حرف.
+
+---
+
+## 📄 الترخيص (License)
+
+هذا المشروع مرخص بموجب رخصة **[MIT License](LICENSE)** - يحق لك الاستخدام والتعديل والتوزيع الحر مع الحفاظ على حقوق الملكية الفكرية.
 
 ---
 
