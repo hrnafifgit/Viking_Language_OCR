@@ -1,0 +1,71 @@
+# ==========================================
+# Byte-compiled / Python Cache
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# ==========================================
+# Large Archives & Raw Data
+# ==========================================
+*.zip
+*.tar.gz
+*.rar
+*.7z
+*.aes
+*.bin
+
+# Datasets and training images (Keep Labeling Studio app only)
+images/
+FINETUNEIMAGE/
+viking_finetune_dataset/
+imagesfintune/*.png
+imagesfintune/*.jpg
+!imagesfintune/01_Labeling_Studio/**
+dataset_preview/
+imagesfintune_preview/
+
+# ==========================================
+# Large Model Weights (> 50MB) & Checkpoints
+# ==========================================
+*.pt
+*.pth
+*.torchscript
+*.tflite
+LASTMODEL/
+pretrained_bestmodel/
+runs/
+finetune_local_runs/
+master_model_test_results/
+test_inference_output/
+scratch/
+
+# Separate packaged project folders & slide tests
+Haroon_Ghalep_Ali_Nasr_Al_Afif_Imageprocessing_project/
+*.pdf
+*.pptx
+phone_screenshot*.png
+test_*.png
+test_*.pptx
+MY_PHONE_SCREENSHOT_ORIGINAL.png
+
+# ==========================================
+# Flutter Build & Editor Artifacts
+# ==========================================
+**/build/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.pub-cache/
+**/.pub/
+**/flutter_*.log
+**/.idea/
+**/*.iml
+.vscode/
+.DS_Store
+Thumbs.db

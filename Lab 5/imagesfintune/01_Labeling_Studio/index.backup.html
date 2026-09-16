@@ -1,0 +1,3051 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>استوديو التوسيم ومعالجة النقوش النبطية | Nabataean Studio</title>
+  <!-- Google Fonts including Noto Sans Nabataean for authentic glyph rendering -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&family=Noto+Sans+Nabataean&family=Outfit:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  
+  <style>
+    @font-face {
+      font-family: 'NabataeanLocal';
+      src: url('SyntheticDatasetGenerator/fonts/nabataean.ttf') format('truetype');
+      font-display: swap;
+    }
+
+    :root {
+      --bg-main: #0c1017;
+      --bg-panel: #121824;
+      --bg-card: #192233;
+      --bg-card-hover: #222f46;
+      --bg-card-active: rgba(247, 127, 0, 0.15);
+      
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-card: #28374f;
+      --border-active: #f77f00;
+
+      --accent-orange: #f77f00;
+      --accent-cyan: #00f5d4;
+      --accent-amber: #ffbe0b;
+      --accent-blue: #3a86ff;
+      --accent-danger: #ef476f;
+
+      --text-primary: #f0f4fc;
+      --text-secondary: #94a3b8;
+      --text-muted: #5e718d;
+
+      --font-nabataean: 'NabataeanLocal', 'Noto Sans Nabataean', 'Segoe UI Historic', system-ui, sans-serif;
+      --font-ui: 'Cairo', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0; padding: 0;
+      user-select: none;
+    }
+
+    html, body {
+      height: 100vh !important;
+      max-height: 100vh !important;
+      width: 100vw !important;
+      max-width: 100vw !important;
+      overflow: hidden !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      position: fixed !important;
+      inset: 0 !important;
+      font-family: var(--font-ui);
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      display: flex;
+      flex-direction: column;
+    }
+
+    * {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    *::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+
+    /* Top Bar - Strictly Fixed & Zero Scroll */
+    .top-bar {
+      height: 40px !important;
+      min-height: 40px !important;
+      max-height: 40px !important;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 0.4rem !important;
+      z-index: 100;
+      gap: 0.25rem !important;
+      overflow: hidden !important;
+    }
+
+    /* Panel Tabs for Zero-Scroll Sidebar */
+    .panel-tabs {
+      display: flex;
+      gap: 2px;
+      background: #090d14;
+      border: 1px solid var(--border-card);
+      border-radius: 6px;
+      padding: 2px;
+      flex-shrink: 0;
+    }
+    .panel-tab-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.67rem;
+      font-weight: 700;
+      padding: 3px 4px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.12s ease;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+    .panel-tab-btn:hover {
+      color: #fff;
+      background: #141c2b;
+    }
+    .panel-tab-btn.active {
+      background: var(--accent-orange);
+      color: #fff;
+    }
+    .tools-tab-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .top-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-shrink: 0;
+    }
+
+    .brand-glyph {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #f77f00, #d62828);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-nabataean);
+      font-size: 1.15rem;
+      font-weight: bold;
+    }
+
+    .brand-title {
+      font-size: 0.84rem;
+      font-weight: 800;
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    /* UI Scale Controller */
+    .ui-scale-group {
+      display: inline-flex;
+      align-items: center;
+      background: #0b0f17;
+      border: 1px solid var(--border-card);
+      border-radius: 5px;
+      padding: 1px;
+      gap: 1px;
+      margin-right: 2px;
+    }
+    .scale-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.62rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      padding: 2px 5px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+    .scale-btn:hover {
+      color: #fff;
+      background: #192233;
+    }
+    .scale-btn.active {
+      background: var(--accent-orange);
+      color: #fff;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      flex-shrink: 0;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.28rem;
+      padding: 0.28rem 0.52rem;
+      border-radius: 5px;
+      font-size: 0.70rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid var(--border-card);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      transition: all 0.15s;
+      font-family: inherit;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .btn:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent-orange);
+      color: var(--accent-orange);
+    }
+
+    .btn-orange {
+      background: linear-gradient(135deg, #f77f00, #d62828);
+      color: #fff;
+      border: none;
+    }
+    .btn-orange:hover {
+      background: linear-gradient(135deg, #ff921a, #ea3a3a);
+      color: #fff;
+      box-shadow: 0 0 12px rgba(247, 127, 0, 0.4);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00f5d4, #00b4d8);
+      color: #05070a;
+      border: none;
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #2bf8dd, #33c6e6);
+      color: #000;
+    }
+
+    .btn-ai-magic {
+      background: linear-gradient(135deg, #7b2cbf, #9d4edd);
+      color: #fff;
+      border: 1px solid rgba(199, 125, 255, 0.4);
+      box-shadow: 0 0 14px rgba(157, 78, 221, 0.4);
+      font-weight: 800;
+    }
+    .btn-ai-magic:hover {
+      background: linear-gradient(135deg, #9d4edd, #c77dff);
+      box-shadow: 0 0 20px rgba(199, 125, 255, 0.7);
+      color: #fff;
+      border-color: #e0aaff;
+      transform: translateY(-1px);
+    }
+    .ai-conf-box {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: #0d131f;
+      border: 1px solid var(--border-card);
+      border-radius: 5px;
+      padding: 2px 6px;
+      font-size: 0.65rem;
+      flex-shrink: 0;
+    }
+    .ai-conf-box input[type="range"] {
+      width: 45px;
+      height: 3px;
+      accent-color: #9d4edd;
+      cursor: pointer;
+    }
+
+    .btn-icon {
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      justify-content: center;
+      font-size: 0.65rem;
+    }
+
+    /* Main Grid Layout */
+    .studio-layout {
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(220px, 260px) 1fr minmax(220px, 260px);
+      height: calc(100vh - 46px - 54px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    @media (max-width: 1536px) {
+      .studio-layout {
+        grid-template-columns: 230px 1fr 240px;
+      }
+      .brand-title {
+        display: none;
+      }
+    }
+
+    @media (max-width: 1366px) {
+      .studio-layout {
+        grid-template-columns: 200px 1fr 220px;
+      }
+      .btn {
+        padding: 0.24rem 0.40rem;
+        font-size: 0.66rem;
+      }
+    }
+
+    /* 1. Left Character Palette (All in view, no scroll) */
+    .palette-panel {
+      background: var(--bg-panel);
+      border-left: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      padding: 0.5rem;
+      gap: 0.4rem;
+      overflow: hidden; /* No scrollbar */
+    }
+
+    .palette-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.2rem 0.3rem;
+    }
+
+    .palette-title {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: var(--accent-orange);
+    }
+
+    .palette-note {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      padding: 0 0.3rem;
+      line-height: 1.2;
+    }
+
+    /* Character Grid: 4 columns x 10 rows (40 cards) that fit perfectly without scroll */
+    .character-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(10, 1fr);
+      gap: 3px;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .char-card {
+      background: #151d2c;
+      border: 1px solid #232f44;
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.1s ease;
+      padding: 2px;
+      min-height: 0;
+    }
+
+    .char-card:hover {
+      background: #202b3e;
+      border-color: #f77f00;
+      transform: scale(1.04);
+      z-index: 5;
+    }
+
+    .char-card.active {
+      border: 2px solid #f77f00 !important;
+      background: rgba(247, 127, 0, 0.18) !important;
+      box-shadow: 0 0 10px rgba(247, 127, 0, 0.35);
+      z-index: 6;
+    }
+
+    .char-card-id {
+      position: absolute;
+      top: 2px;
+      left: 3px;
+      font-size: 0.52rem;
+      font-family: var(--font-mono);
+      color: #627694;
+      line-height: 1;
+    }
+
+    .char-card-glyph {
+      font-family: var(--font-nabataean);
+      font-size: 1.35rem;
+      line-height: 1;
+      color: #ffffff;
+      margin-top: 2px;
+      text-align: center;
+    }
+
+    .char-card-count {
+      position: absolute;
+      bottom: 1px;
+      right: 3px;
+      font-size: 0.55rem;
+      font-family: var(--font-mono);
+      font-weight: bold;
+      color: #8fa3c0;
+      line-height: 1;
+    }
+
+    .char-card.has-count .char-card-count {
+      color: #f77f00;
+      font-weight: 800;
+    }
+
+    /* 2. Center Canvas Workspace */
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #080b10;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .canvas-toolbar {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(18, 24, 36, 0.92);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border-card);
+      border-radius: 30px;
+      padding: 3px 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      z-index: 50;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    .tool-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.12s;
+    }
+
+    .tool-btn:hover {
+      background: var(--bg-card-hover);
+      color: #fff;
+    }
+
+    .tool-btn.active {
+      background: rgba(247, 127, 0, 0.2);
+      color: var(--accent-orange);
+      border: 1px solid var(--accent-orange);
+    }
+
+    .tool-sep {
+      width: 1px;
+      height: 18px;
+      background: var(--border-subtle);
+      margin: 0 2px;
+    }
+
+    #mainCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+    }
+
+    /* 3. Right Sidebar: Image Processing, Rotation & Annotations */
+    .tools-panel {
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden !important;
+      padding: 0.35rem;
+      gap: 0.35rem;
+    }
+
+    .panel-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 6px;
+      padding: 0.45rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .card-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .ctrl-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .ctrl-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.74rem;
+      color: var(--text-secondary);
+    }
+
+    .ctrl-val {
+      font-family: var(--font-mono);
+      color: var(--accent-orange);
+      font-size: 0.72rem;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.12);
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: var(--accent-orange);
+      cursor: pointer;
+    }
+
+    .chip-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.35rem;
+    }
+
+    .chip-btn {
+      padding: 0.35rem 0.4rem;
+      background: #151d2c;
+      border: 1px solid var(--border-card);
+      border-radius: 4px;
+      color: var(--text-secondary);
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      font-family: inherit;
+    }
+
+    .chip-btn:hover {
+      border-color: var(--accent-cyan);
+      color: #fff;
+    }
+
+    .select-input {
+      width: 100%;
+      padding: 0.35rem 0.5rem;
+      background: #151d2c;
+      border: 1px solid var(--border-card);
+      border-radius: 4px;
+      color: var(--text-primary);
+      font-size: 0.74rem;
+      font-family: inherit;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Bottom Thumbnail Queue */
+    /* Top Bar Labels Directory Selector */
+    .labels-dir-box {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: #111722;
+      border: 1px solid var(--border-card);
+      border-radius: 6px;
+      padding: 2px 6px;
+    }
+
+    /* Top Bar Image Status Card (Green / Red indicator box) */
+    .image-status-card {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-card);
+      background: #121824;
+      transition: all 0.2s ease;
+    }
+
+    .image-status-card.is-labeled {
+      border-color: #00f5d4 !important;
+      background: rgba(0, 245, 212, 0.08) !important;
+      box-shadow: 0 0 10px rgba(0, 245, 212, 0.15);
+    }
+
+    .image-status-card.is-unlabeled {
+      border-color: #ef476f !important;
+      background: rgba(239, 71, 111, 0.08) !important;
+      box-shadow: 0 0 10px rgba(239, 71, 111, 0.15);
+    }
+
+    .status-img-name {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #fff;
+      max-width: 140px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      font-family: var(--font-mono);
+    }
+
+    .status-indicator-badge {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .status-indicator-badge.is-labeled {
+      background: rgba(0, 245, 212, 0.2);
+      color: #00f5d4;
+      border: 1px solid #00f5d4;
+    }
+
+    .status-indicator-badge.is-unlabeled {
+      background: rgba(239, 71, 111, 0.2);
+      color: #ef476f;
+      border: 1px solid #ef476f;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .status-indicator-badge.is-labeled .status-dot {
+      background: #00f5d4;
+      box-shadow: 0 0 6px #00f5d4;
+    }
+
+    .status-indicator-badge.is-unlabeled .status-dot {
+      background: #ef476f;
+      box-shadow: 0 0 6px #ef476f;
+    }
+
+    .bottom-strip {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      padding: 0 0.75rem;
+      gap: 0.5rem;
+      overflow-x: auto;
+    }
+
+    .thumb-card {
+      flex-shrink: 0;
+      width: 70px;
+      height: 46px;
+      border-radius: 4px;
+      border: 2px solid var(--border-card);
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      background: #000;
+      transition: all 0.15s ease;
+    }
+
+    .thumb-card:hover {
+      transform: scale(1.04);
+    }
+
+    .thumb-card.active {
+      border-color: var(--accent-orange) !important;
+      box-shadow: 0 0 8px rgba(247, 127, 0, 0.5);
+    }
+
+    .thumb-card.is-labeled {
+      border-color: rgba(0, 245, 212, 0.5);
+    }
+
+    .thumb-card.is-unlabeled {
+      border-color: rgba(255, 255, 255, 0.15);
+      opacity: 0.85;
+    }
+
+    .thumb-card canvas {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .thumb-badge {
+      position: absolute;
+      bottom: 1px;
+      right: 2px;
+      font-size: 0.55rem;
+      font-family: var(--font-mono);
+      font-weight: bold;
+      padding: 1px 4px;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .thumb-badge.labeled {
+      background: rgba(0, 245, 212, 0.9);
+      color: #05070a;
+    }
+
+    .thumb-badge.unlabeled {
+      background: rgba(25, 34, 51, 0.85);
+      color: #8fa3c0;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .thumb-name-tooltip {
+      position: absolute;
+      top: 1px;
+      left: 2px;
+      font-size: 0.5rem;
+      background: rgba(0, 0, 0, 0.7);
+      color: #cbd5e1;
+      padding: 0 2px;
+      border-radius: 2px;
+      max-width: 60px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .thumb-add {
+      flex-shrink: 0;
+      width: 46px;
+      height: 46px;
+      border-radius: 4px;
+      border: 1px dashed var(--border-card);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .thumb-add:hover {
+      border-color: var(--accent-orange);
+      color: var(--accent-orange);
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .modal-backdrop.show { opacity: 1; pointer-events: auto; }
+    .modal-box {
+      background: #131924; border: 1px solid var(--border-card);
+      border-radius: 12px; width: 90%; max-width: 520px;
+      padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem;
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.5rem; }
+    .modal-opt {
+      background: #192233; border: 1px solid var(--border-card);
+      border-radius: 8px; padding: 0.8rem; display: flex;
+      align-items: center; justify-content: space-between; cursor: pointer;
+    }
+    .modal-opt:hover { border-color: var(--accent-orange); }
+
+    /* PlayStation-Style Bounding Box D-Pad Shaper */
+    .dpad-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 6px;
+      background: #0b0f17;
+      border: 1px solid #1c2638;
+      border-radius: 10px;
+    }
+
+    .dpad-step-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 4px;
+    }
+
+    .dpad-steps {
+      display: flex;
+      gap: 3px;
+    }
+
+    .step-btn {
+      background: #151d2c;
+      border: 1px solid #28374f;
+      color: #94a3b8;
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 0.65rem;
+      font-family: var(--font-mono);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .step-btn:hover {
+      border-color: var(--accent-orange);
+      color: #fff;
+    }
+
+    .step-btn.active {
+      background: var(--accent-orange);
+      color: #000;
+      font-weight: 800;
+      border-color: var(--accent-orange);
+    }
+
+    .dpad-cross {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      width: 100%;
+    }
+
+    .dpad-arm {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .dpad-label {
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: #7b8fa8;
+      letter-spacing: 0.5px;
+    }
+
+    .dpad-btn-pair {
+      display: flex;
+      gap: 3px;
+    }
+
+    .dpad-middle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      gap: 4px;
+    }
+
+    .dpad-center-hub {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #141b27;
+      border: 1px solid #233147;
+      border-radius: 8px;
+      padding: 4px 6px;
+      min-width: 75px;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
+    }
+
+    .hub-title {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--accent-cyan);
+    }
+
+    .hub-actions {
+      display: flex;
+      gap: 3px;
+      margin-top: 3px;
+    }
+
+    .hub-btn {
+      background: #1c2638;
+      border: 1px solid #2d3f5a;
+      color: #f0f4fc;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 0.62rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.1s ease;
+    }
+
+    .hub-btn:hover {
+      background: #25334a;
+      border-color: var(--accent-orange);
+      color: var(--accent-orange);
+    }
+
+    .dpad-btn {
+      background: #151d2a;
+      border: 1px solid #28374f;
+      color: #fff;
+      border-radius: 5px;
+      padding: 4px 7px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      transition: all 0.1s ease;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    .dpad-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+
+    .dpad-btn:active {
+      transform: translateY(1px);
+    }
+
+    /* Expand Button: Neon Cyan Highlight */
+    .dpad-btn.btn-expand {
+      border-color: rgba(0, 245, 212, 0.4);
+      background: linear-gradient(180deg, #182838 0%, #121c27 100%);
+    }
+
+    .dpad-btn.btn-expand:hover {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      box-shadow: 0 0 8px rgba(0, 245, 212, 0.35);
+    }
+
+    /* Shrink Button: Warm Amber Highlight */
+    .dpad-btn.btn-shrink {
+      border-color: rgba(247, 127, 0, 0.4);
+      background: linear-gradient(180deg, #2b1f1a 0%, #191412 100%);
+    }
+
+    .dpad-btn.btn-shrink:hover {
+      border-color: var(--accent-orange);
+      color: var(--accent-orange);
+      box-shadow: 0 0 8px rgba(247, 127, 0, 0.35);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="top-bar">
+    <div class="top-brand">
+      <div class="brand-glyph">𐢀</div>
+      <div class="brand-title">النقوش النبطية</div>
+      <!-- Quick UI Zoom Switcher -->
+      <div class="ui-scale-group" title="ضبط حجم الواجهة لتناسب شاشتك">
+        <button class="scale-btn" onclick="window.setUiZoom(1.0)">100%</button>
+        <button class="scale-btn active" onclick="window.setUiZoom(0.85)">85%</button>
+        <button class="scale-btn" onclick="window.setUiZoom(0.75)">75%</button>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;">
+      <button class="btn btn-icon" id="btnPrevImg">◀</button>
+
+      <!-- Smart Image Status Card: Shows Name and Green/Red Status -->
+      <div class="image-status-card is-unlabeled" id="imgStatusCard" title="حالة الصورة الحالية">
+        <div class="status-img-name" id="statusImgName">🖼️ لا توجد صورة</div>
+        <div class="status-indicator-badge is-unlabeled" id="statusIndicatorBadge">
+          <span class="status-dot"></span>
+          <span id="statusIndicatorText">غير موسمة</span>
+        </div>
+      </div>
+
+      <button class="btn btn-icon" id="btnNextImg">▶</button>
+      <span style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted);" id="imgCounter">0 / 0</span>
+    </div>
+
+    <div class="top-actions">
+      <!-- Labels Folder Path Selector Box -->
+      <div class="labels-dir-box" title="حدد مجلد ملفات التوسيم (.txt)">
+        <span style="font-size: 0.65rem; color: #94a3b8; white-space: nowrap;">📁 الليبل:</span>
+        <input type="text" id="txtLabelsDirPath" placeholder="مجلد TXT..." readonly style="width: 85px; background: #0c111a; border: 1px solid var(--border-card); color: #00f5d4; font-size: 0.65rem; border-radius: 4px; padding: 2px 4px; font-family: var(--font-mono); text-overflow: ellipsis; cursor: pointer;" onclick="document.getElementById('fileLabelsFolderInput').click()">
+        <button class="btn btn-sm" onclick="document.getElementById('fileLabelsFolderInput').click()" style="padding: 2px 5px; font-size: 0.65rem;">استعراض</button>
+      </div>
+      <input type="file" id="fileLabelsFolderInput" webkitdirectory directory multiple style="display: none;">
+      <input type="file" id="fileLabelsInput" accept=".txt" multiple style="display: none;">
+
+      <!-- Direct Save Label TXT Button -->
+      <button class="btn btn-primary" id="btnDirectSaveTxt" title="حفظ ملف الليبل والتوسيمات بتنسيق TXT (Ctrl+S)">
+        <span>💾</span>
+        <span>حفظ (TXT)</span>
+      </button>
+
+      <!-- AI Auto-Label Powered by Stage 2 YOLOv8 Model -->
+      <div class="ai-conf-box" title="حساسية الذكاء الاصطناعي (كلما قلت زاد عدد الحروف المكتشفة على الصخر)">
+        <span style="color: #c77dff; font-weight: 800;">حساسية AI:</span>
+        <input type="range" id="aiConfSlider" min="1" max="30" value="4" oninput="document.getElementById('aiConfVal').innerText = this.value + '%'">
+        <span id="aiConfVal" style="font-family: var(--font-mono); color: #00f5d4; min-width: 25px; font-weight: 800;">4%</span>
+      </div>
+      <button class="btn btn-ai-magic" id="btnAiAutoDetect" title="فحص واكتشاف النص والحروف بالذكاء الاصطناعي وعرض تقرير بالدقة دون رسم صناديق">
+        <span>✨</span>
+        <span id="aiBtnText">فحص النص (AI)</span>
+      </button>
+
+      <!-- Auto-Crop Characters Button -->
+      <button class="btn btn-cyan" id="btnExportCrops" title="قص وتصدير جميع الحروف المحددة في مجلدات ZIP منظمة">
+        <span>✂️</span>
+        <span>قص الحروف</span>
+      </button>
+
+      <!-- Upload Images -->
+      <button class="btn" onclick="document.getElementById('fileImgInput').click()" title="رفع صور النقوش">
+        <span>🖼️</span>
+        <span>رفع صور</span>
+      </button>
+      <input type="file" id="fileImgInput" accept="image/*" multiple style="display: none;">
+
+      <!-- Import Classes File Button -->
+      <button class="btn btn-orange" onclick="document.getElementById('fileClassesInput').click()" title="استيراد ملف حروف (classes.txt / classes_with_arabic.txt)">
+        <span>📂</span>
+        <span>الحروف</span>
+      </button>
+      <input type="file" id="fileClassesInput" accept=".txt,.json,.yaml,.csv" style="display: none;">
+
+      <!-- Export Data Modal -->
+      <button class="btn" id="btnOpenExport" title="خيارات التصدير المتقدمة (YOLO, ZIP, Patches)">
+        <span>📦</span>
+        <span>تصدير</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Studio Layout -->
+  <main class="studio-layout">
+
+    <!-- 1. LEFT PANEL: Nabataean Character Palette (All in view, no scroll) -->
+    <aside class="palette-panel">
+      <div class="palette-header">
+        <div class="palette-title">الأبجدية النبطية (40 رمزاً)</div>
+        <span style="font-size: 0.7rem; color: var(--text-muted);" id="activeCharLabel">𐢀 (#0)</span>
+      </div>
+      <div class="palette-note">اختر الحرف، ثم انقر وارسم صندوق التوسيم داخل الصورة.</div>
+      
+      <!-- Character Grid: 4 x 10 = 40 cards, NO SCROLL -->
+      <div class="character-grid" id="charGrid">
+        <!-- Dynamically populated with 40 Nabataean characters -->
+      </div>
+    </aside>
+
+    <!-- 2. CENTER CANVAS WORKSPACE -->
+    <section class="canvas-container" id="canvasContainer">
+      <div class="canvas-toolbar">
+        <button class="tool-btn" id="toolSelect" title="تحديد وتحريك (V)">👆</button>
+        <button class="tool-btn active" id="toolRect" title="رسم صندوق YOLO (R)">🔲</button>
+        <button class="tool-btn" id="toolPan" title="سحب وتنقل (Space)">✋</button>
+        <div class="tool-sep"></div>
+        <button class="tool-btn" id="btnUndo" title="تراجع (Ctrl+Z)">↩️</button>
+        <button class="tool-btn" id="btnRedo" title="إعادة (Ctrl+Y)">↪️</button>
+        <button class="tool-btn" id="btnDelete" title="حذف الصندوق المحدد (Delete)">🗑️</button>
+        <div class="tool-sep"></div>
+        <button class="tool-btn" id="toggleSplitBtn" title="مقارنة قبل/بعد">⬌</button>
+        <div class="tool-sep"></div>
+        <button class="tool-btn" id="btnZoomOut">🔍-</button>
+        <span style="font-size: 0.72rem; font-family: var(--font-mono); min-width: 40px; text-align: center;" id="zoomDisplay">100%</span>
+        <button class="tool-btn" id="btnZoomIn">🔍+</button>
+        <button class="tool-btn" id="btnFit" title="ملاءمة الشاشة">⛶</button>
+      </div>
+
+      <canvas id="mainCanvas"></canvas>
+    </section>
+
+    <!-- 3. RIGHT PANEL: Image Filters, Rotation & Annotations -->
+    <aside class="tools-panel">
+      <!-- Tabs Switcher for Zero Scroll -->
+      <div class="panel-tabs">
+        <button class="panel-tab-btn active" id="tabBtnFilters" onclick="window.switchToolsTab('tab_filters')">🎨 الفلاتر</button>
+        <button class="panel-tab-btn" id="tabBtnGeom" onclick="window.switchToolsTab('tab_geom')">🔄 الإضاءة</button>
+        <button class="panel-tab-btn" id="tabBtnBoxes" onclick="window.switchToolsTab('tab_boxes')">🏷️ التوسيم</button>
+      </div>
+
+      <!-- Tab 1: Filters -->
+      <div class="tools-tab-content" id="tab_filters">
+        <!-- Quick Presets -->
+        <div class="panel-card">
+          <div class="card-title"><span>✨ قوالب تحسين الحفر</span></div>
+          <div class="chip-grid">
+            <button class="chip-btn" data-preset="stone_boost">حفر حجري بارز</button>
+            <button class="chip-btn" data-preset="dark_invert">عكس الصخور</button>
+            <button class="chip-btn" data-preset="deep_contrast">تباين الأخاديد</button>
+            <button class="chip-btn" data-preset="otsu_clean">عتبة أوتسو</button>
+            <button class="chip-btn" data-preset="sobel_edges">كشف الحواف</button>
+            <button class="chip-btn" data-preset="sandstone_map">خريطة صخرية</button>
+          </div>
+        </div>
+
+        <!-- Edge Detection & Binarization -->
+        <div class="panel-card">
+          <div class="card-title"><span>⚡ فلاتر متقدمة</span></div>
+          <select class="select-input" id="selEdge">
+            <option value="none">بدون كشف حواف</option>
+            <option value="sobel">فلتر سوبل (Sobel - إبراز الحفر)</option>
+            <option value="laplacian">فلتر لابلاسيان (Laplacian)</option>
+          </select>
+          <select class="select-input" id="selBinarize" style="margin-top: 4px;">
+            <option value="none">ألوان كاملة (بدون عتبة)</option>
+            <option value="otsu">عتبة أوتسو الثنائية (Otsu)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Tab 2: Geometry & Adjustments -->
+      <div class="tools-tab-content" id="tab_geom" style="display: none;">
+        <!-- Rotation & Geometry -->
+        <div class="panel-card">
+          <div class="card-title">
+            <span>🔄 تدوير وهندسة الصورة</span>
+            <button class="btn btn-sm" id="btnResetRot" style="padding: 1px 6px;">0°</button>
+          </div>
+          <div class="ctrl-group">
+            <div class="ctrl-row"><span>زاوية التدوير</span><span class="ctrl-val" id="valRot">0°</span></div>
+            <input type="range" id="sliderRot" min="-180" max="180" value="0" step="1">
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.25rem;">
+            <button class="btn btn-sm" id="btnCCW">↺ 90°</button>
+            <button class="btn btn-sm" id="btnCW">↻ 90°</button>
+            <button class="btn btn-sm" id="btnFlH">↔ أفقي</button>
+            <button class="btn btn-sm" id="btnFlV">↕ رأسي</button>
+          </div>
+        </div>
+
+        <!-- Basic Adjustments -->
+        <div class="panel-card">
+          <div class="card-title"><span>☀️ الإضاءة والتباين</span><button class="btn btn-sm" id="btnResetFilters" style="padding: 1px 6px;">إعادة ضبط</button></div>
+          <div class="ctrl-group">
+            <div class="ctrl-row"><span>السطوع</span><span class="ctrl-val" id="valBright">0</span></div>
+            <input type="range" id="sliderBright" min="-1" max="1" value="0" step="0.02">
+          </div>
+          <div class="ctrl-group">
+            <div class="ctrl-row"><span>التباين</span><span class="ctrl-val" id="valContrast">0</span></div>
+            <input type="range" id="sliderContrast" min="-1" max="1" value="0" step="0.02">
+          </div>
+          <div class="ctrl-group">
+            <div class="ctrl-row"><span>غاما (Gamma)</span><span class="ctrl-val" id="valGamma">1.0</span></div>
+            <input type="range" id="sliderGamma" min="0.2" max="3" value="1.0" step="0.05">
+          </div>
+          <div class="ctrl-group">
+            <div class="ctrl-row"><span>الشحذ والتوضيح</span><span class="ctrl-val" id="valSharpen">0</span></div>
+            <input type="range" id="sliderSharpen" min="0" max="3" value="0" step="0.1">
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.74rem;">
+            <label style="cursor: pointer;"><input type="checkbox" id="chkInvert"> عكس الألوان</label>
+            <label style="cursor: pointer;"><input type="checkbox" id="chkEqualize"> موازنة التباين</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Annotations & Box Shaper -->
+      <div class="tools-tab-content" id="tab_boxes" style="display: none;">
+        <!-- Selected Box Inspector & Precision Shaping -->
+        <div class="panel-card" id="boxShaperCard" style="display: none; border-color: var(--accent-orange);">
+          <div class="card-title">
+            <span style="color: var(--accent-orange);">🎮 تشكيل الصندوق (D-Pad)</span>
+            <span class="ctrl-val" id="boxShaperId">#0</span>
+          </div>
+
+          <!-- PlayStation-Style D-Pad Cross -->
+          <div class="dpad-wrapper">
+            <div class="dpad-step-bar">
+              <span style="font-size: 0.65rem; color: var(--text-muted);">الخطوة:</span>
+              <div class="dpad-steps" id="dpadStepsContainer">
+                <button class="step-btn" data-step="1">1px</button>
+                <button class="step-btn active" data-step="2">2px</button>
+                <button class="step-btn" data-step="5">5px</button>
+                <button class="step-btn" data-step="10">10px</button>
+              </div>
+            </div>
+
+            <div class="dpad-cross">
+              <div class="dpad-arm dpad-top">
+                <div class="dpad-label">أعلى ⬆</div>
+                <div class="dpad-btn-pair">
+                  <button class="dpad-btn btn-shrink" id="btnTopShrink">▼</button>
+                  <button class="dpad-btn btn-expand" id="btnTopExpand">▲</button>
+                </div>
+              </div>
+
+              <div class="dpad-middle-row">
+                <div class="dpad-arm dpad-left">
+                  <div class="dpad-label">⬅ يسار</div>
+                  <div class="dpad-btn-pair">
+                    <button class="dpad-btn btn-expand" id="btnLeftExpand">◀</button>
+                    <button class="dpad-btn btn-shrink" id="btnLeftShrink">▶</button>
+                  </div>
+                </div>
+
+                <div class="dpad-center-hub">
+                  <div class="hub-title" id="dpadDims">0×0</div>
+                  <div class="hub-actions">
+                    <button class="hub-btn" id="btnAllShrink">− الكل</button>
+                    <button class="hub-btn" id="btnAllExpand">+ الكل</button>
+                  </div>
+                </div>
+
+                <div class="dpad-arm dpad-right">
+                  <div class="dpad-label">يمين ➡</div>
+                  <div class="dpad-btn-pair">
+                    <button class="dpad-btn btn-shrink" id="btnRightShrink">◀</button>
+                    <button class="dpad-btn btn-expand" id="btnRightExpand">▶</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="dpad-arm dpad-bottom">
+                <div class="dpad-btn-pair">
+                  <button class="dpad-btn btn-shrink" id="btnBottomShrink">▲</button>
+                  <button class="dpad-btn btn-expand" id="btnBottomExpand">▼</button>
+                </div>
+                <div class="dpad-label">أسفل ⬇</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 0.72rem; margin-top: 4px;">
+            <div><span style="color: var(--text-muted);">X:</span> <input type="number" id="inpBoxX" style="width: 100%; background: #0e141f; border: 1px solid var(--border-card); color: #fff; border-radius: 3px; padding: 2px 4px;"></div>
+            <div><span style="color: var(--text-muted);">Y:</span> <input type="number" id="inpBoxY" style="width: 100%; background: #0e141f; border: 1px solid var(--border-card); color: #fff; border-radius: 3px; padding: 2px 4px;"></div>
+            <div><span style="color: var(--text-muted);">W:</span> <input type="number" id="inpBoxW" style="width: 100%; background: #0e141f; border: 1px solid var(--border-card); color: #fff; border-radius: 3px; padding: 2px 4px;"></div>
+            <div><span style="color: var(--text-muted);">H:</span> <input type="number" id="inpBoxH" style="width: 100%; background: #0e141f; border: 1px solid var(--border-card); color: #fff; border-radius: 3px; padding: 2px 4px;"></div>
+          </div>
+        </div>
+
+        <!-- Annotations Summary -->
+        <div class="panel-card" style="flex: 1; overflow-y: auto; max-height: 280px;">
+          <div class="card-title">
+            <span>التوسيمات الحالية</span>
+            <span class="ctrl-val" id="annTotalBadge">0 عناصر</span>
+          </div>
+          <div id="annList" style="display: flex; flex-direction: column; gap: 3px;"></div>
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- Bottom Thumbnail Strip -->
+  <footer class="bottom-strip" id="thumbStrip">
+    <div class="thumb-add" onclick="document.getElementById('fileImgInput').click()" title="إضافة صور">+</div>
+  </footer>
+
+  <!-- Export Modal -->
+  <div class="modal-backdrop" id="exportModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="font-size: 1rem; color: #fff;">💾 تصدير التوسيمات والصور</h3>
+        <button class="btn btn-sm" id="btnCloseExport">✕</button>
+      </div>
+      <div class="modal-opt" id="btnDoExportYOLO">
+        <div>
+          <div style="font-weight: bold; font-size: 0.88rem; color: #fff;">🚀 تصدير ملفات YOLO (.txt + classes.txt + data.yaml)</div>
+          <div style="font-size: 0.72rem; color: var(--text-secondary);">إحداثيات معيارية جاهزة لتدريب نماذج YOLO</div>
+        </div>
+        <button class="btn btn-primary btn-sm">تنزيل YOLO</button>
+      </div>
+
+      <div class="modal-opt" id="btnDoExportCrops">
+        <div>
+          <div style="font-weight: bold; font-size: 0.88rem; color: #fff;">✂️ قص مقتطفات الحروف المفردة (Cropped Patches ZIP)</div>
+          <div style="font-size: 0.72rem; color: var(--text-secondary);">قص كل حرف موسوم كصورة منفصلة مع مجلد لكل فئة</div>
+        </div>
+        <button class="btn btn-orange btn-sm">تنزيل المقتطفات</button>
+      </div>
+
+      <div class="modal-opt" id="btnDoExportImage">
+        <div>
+          <div style="font-weight: bold; font-size: 0.88rem; color: #fff;">🖼️ تصدير الصورة المعالجة (PNG عالية الدقة)</div>
+          <div style="font-size: 0.72rem; color: var(--text-secondary);">حفظ الصورة بالدقة الأصلية بعد تطبيق الفلاتر والتدوير</div>
+        </div>
+        <button class="btn btn-sm">حفظ الصورة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Inspection & Accuracy Results Modal -->
+  <div class="modal-backdrop" id="aiResultsModal">
+    <div class="modal-box" style="max-width: 620px; border-color: #9d4edd; box-shadow: 0 0 25px rgba(157, 78, 221, 0.35);">
+      <div class="modal-header" style="border-bottom-color: rgba(157, 78, 221, 0.3);">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.3rem;">🤖</span>
+          <div>
+            <h3 style="font-size: 1rem; color: #fff; margin: 0;">تقرير فحص الحروف بالذكاء الاصطناعي (AI Inspection)</h3>
+            <span style="font-size: 0.7rem; color: #c77dff;">نتائج كشف النقوش ونسب الدقة والمطابقة</span>
+          </div>
+        </div>
+        <button class="btn btn-sm" id="btnCloseAiModal" style="padding: 2px 8px;">✕</button>
+      </div>
+
+      <!-- Detected Text Banner -->
+      <div style="background: #090d14; border: 1px solid rgba(157, 78, 221, 0.4); border-radius: 8px; padding: 12px; text-align: center;">
+        <div style="font-size: 0.72rem; color: #94a3b8; margin-bottom: 6px;">🔤 الحروف والنص المكتشف على الصخرة:</div>
+        <div id="aiDetectedGlyphs" style="font-family: var(--font-nabataean); font-size: 2.2rem; color: #00f5d4; letter-spacing: 6px; min-height: 45px; text-shadow: 0 0 12px rgba(0, 245, 212, 0.5);">
+          <!-- Glyphs will be injected here -->
+        </div>
+        <div id="aiDetectedArabic" style="font-size: 0.85rem; color: #ffbe0b; font-weight: 700; margin-top: 4px;">
+          <!-- Arabic names will be injected here -->
+        </div>
+      </div>
+
+      <!-- Detailed Breakdown Table -->
+      <div style="max-height: 260px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;" id="aiDetectionsList">
+        <!-- Detection cards injected here -->
+      </div>
+
+      <!-- Actions -->
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; margin-top: 5px;">
+        <span id="aiSummaryCount" style="font-size: 0.75rem; color: #94a3b8; font-family: var(--font-mono);"></span>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-sm" id="btnDismissAiModal">إغلاق التقرير</button>
+          <button class="btn btn-primary btn-sm" id="btnApplyAiBoxes" title="إذا أردت رسم هذه الصناديق على الكانفاس لتعديلها أو حفظها">
+            <span>📥</span>
+            <span>رسم الصناديق على الكانفاس</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- APPLICATION JAVASCRIPT -->
+  <script>
+    (function() {
+      'use strict';
+
+      // UI Zoom Controller for fitting laptop screens & 4K/high-DPI scaling
+      window.setUiZoom = function(scale) {
+        document.body.style.zoom = scale;
+        try { localStorage.setItem('nabataean_ui_zoom', scale); } catch(e) {}
+        document.querySelectorAll('.scale-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.innerText.includes(Math.round(scale * 100)));
+        });
+      };
+      const savedUiZoom = localStorage.getItem('nabataean_ui_zoom');
+      if (savedUiZoom) {
+        window.setUiZoom(parseFloat(savedUiZoom));
+      } else {
+        window.setUiZoom(0.85);
+      }
+
+      // Sidebar Tab Switcher for zero vertical scroll
+      window.switchToolsTab = function(tabId) {
+        document.querySelectorAll('.tools-tab-content').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.panel-tab-btn').forEach(btn => btn.classList.remove('active'));
+        const target = document.getElementById(tabId);
+        if (target) target.style.display = 'flex';
+        if (tabId === 'tab_filters') document.getElementById('tabBtnFilters')?.classList.add('active');
+        if (tabId === 'tab_geom') document.getElementById('tabBtnGeom')?.classList.add('active');
+        if (tabId === 'tab_boxes') document.getElementById('tabBtnBoxes')?.classList.add('active');
+      };
+
+      // 40 Nabataean Classes with authentic Unicode & Descriptions
+      const NABATAEAN_CLASSES = [
+        { id: 0, char: '𐢀', name_ar: 'ألف نهائية' },
+        { id: 1, char: '𐢁', name_ar: 'ألف' },
+        { id: 2, char: '𐢂', name_ar: 'باء نهائية' },
+        { id: 3, char: '𐢃', name_ar: 'باء' },
+        { id: 4, char: '𐢄', name_ar: 'جيم' },
+        { id: 5, char: '𐢅', name_ar: 'دال' },
+        { id: 6, char: '𐢆', name_ar: 'هاء نهائية' },
+        { id: 7, char: '𐢇', name_ar: 'هاء' },
+        { id: 8, char: '𐢈', name_ar: 'واو' },
+        { id: 9, char: '𐢉', name_ar: 'زاي' },
+        { id: 10, char: '𐢊', name_ar: 'حاء' },
+        { id: 11, char: '𐢋', name_ar: 'طاء' },
+        { id: 12, char: '𐢌', name_ar: 'ياء نهائية' },
+        { id: 13, char: '𐢍', name_ar: 'ياء' },
+        { id: 14, char: '𐢎', name_ar: 'كاف نهائية' },
+        { id: 15, char: '𐢏', name_ar: 'كاف' },
+        { id: 16, char: '𐢐', name_ar: 'لام نهائية' },
+        { id: 17, char: '𐢑', name_ar: 'لام' },
+        { id: 18, char: '𐢒', name_ar: 'ميم نهائية' },
+        { id: 19, char: '𐢓', name_ar: 'ميم' },
+        { id: 20, char: '𐢔', name_ar: 'نون نهائية' },
+        { id: 21, char: '𐢕', name_ar: 'نون' },
+        { id: 22, char: '𐢖', name_ar: 'سمخ / سين' },
+        { id: 23, char: '𐢗', name_ar: 'عين' },
+        { id: 24, char: '𐢘', name_ar: 'فاء' },
+        { id: 25, char: '𐢙', name_ar: 'صاد' },
+        { id: 26, char: '𐢚', name_ar: 'قاف' },
+        { id: 27, char: '𐢛', name_ar: 'راء' },
+        { id: 28, char: '𐢜', name_ar: 'شين نهائية' },
+        { id: 29, char: '𐢝', name_ar: 'شين' },
+        { id: 30, char: '𐢞', name_ar: 'تاء' },
+        { id: 31, char: '𐢧', name_ar: 'رقم 1' },
+        { id: 32, char: '𐢨', name_ar: 'رقم 2' },
+        { id: 33, char: '𐢩', name_ar: 'رقم 3' },
+        { id: 34, char: '𐢪', name_ar: 'رقم 4' },
+        { id: 35, char: '𐢫', name_ar: 'رقم 4 صليبي' },
+        { id: 36, char: '𐢬', name_ar: 'رقم 5' },
+        { id: 37, char: '𐢭', name_ar: 'رقم 10' },
+        { id: 38, char: '𐢮', name_ar: 'رقم 20' },
+        { id: 39, char: '𐢯', name_ar: 'رقم 100' }
+      ];
+
+      const DISTINCT_COLORS = [
+        '#f77f00', '#00f5d4', '#e63946', '#7b2cbf', '#fee440',
+        '#4cc9f0', '#52b788', '#f72585', '#ff9e00', '#06d6a0',
+        '#8338ec', '#3a86ff', '#fb5607', '#ffbe0b', '#2a9d8f',
+        '#e76f51', '#70e000', '#38b000', '#007200', '#d00000',
+        '#9d0208', '#6a040f', '#03045e', '#023e8a', '#0077b6',
+        '#0096c7', '#00b4d8', '#48cae4', '#ff0a54', '#ff477e',
+        '#ff70a6', '#ff99c8', '#f4a261', '#e9c46a', '#a8dadc',
+        '#457b9d', '#1d3557', '#9d4edd', '#ff006e', '#00f5d4'
+      ];
+
+      function getClassColor(id) {
+        return DISTINCT_COLORS[id % DISTINCT_COLORS.length];
+      }
+
+      // App State
+      const state = {
+        classes: [...NABATAEAN_CLASSES],
+        activeClassId: 0,
+        images: [],
+        currentImageIndex: -1,
+        filters: {
+          brightness: 0, contrast: 0, exposure: 0, gamma: 1.0,
+          invert: false, grayscale: false, equalizeHist: false,
+          sharpen: 0, edgeDetection: 'none', binarize: 'none', colorMap: 'none'
+        },
+        rotation: 0, flipH: false, flipV: false,
+        scale: 1, panX: 0, panY: 0,
+        activeTool: 'rect',
+        annotations: [],
+        selectedAnn: null,
+        isMouseDown: false, isPanning: false, isDrawing: false,
+        dragStartX: 0, dragStartY: 0, currentRect: null,
+        splitView: false, splitPos: 0.5
+      };
+
+      const canvas = document.getElementById('mainCanvas');
+      const ctx = canvas.getContext('2d');
+      let processedCanvas = null;
+
+      function showToast(msg, type = 'info') {
+        const c = document.getElementById('toastContainer');
+        if (!c) return;
+        const t = document.createElement('div');
+        t.className = 'toast';
+        t.textContent = msg;
+        c.appendChild(t);
+        setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2500);
+      }
+
+      // Filter & Transform Pipeline
+      function runFilterPipeline(sourceCanvas, filters, rotation, flipH, flipV) {
+        const rad = (rotation * Math.PI) / 180;
+        const sin = Math.abs(Math.sin(rad));
+        const cos = Math.abs(Math.cos(rad));
+        const w = sourceCanvas.width;
+        const h = sourceCanvas.height;
+        const nw = Math.round(w * cos + h * sin);
+        const nh = Math.round(w * sin + h * cos);
+
+        const tCanvas = document.createElement('canvas');
+        tCanvas.width = nw;
+        tCanvas.height = nh;
+        const tCtx = tCanvas.getContext('2d');
+        tCtx.translate(nw / 2, nh / 2);
+        tCtx.rotate(rad);
+        tCtx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+        tCtx.drawImage(sourceCanvas, -w / 2, -h / 2);
+
+        const out = document.createElement('canvas');
+        out.width = nw;
+        out.height = nh;
+        const oCtx = out.getContext('2d', { willReadFrequently: true });
+        oCtx.drawImage(tCanvas, 0, 0);
+
+        const imgData = oCtx.getImageData(0, 0, nw, nh);
+        const d = imgData.data;
+
+        const bFac = filters.brightness * 255;
+        const cFac = (259 * (filters.contrast * 255 + 255)) / (255 * (259 - filters.contrast * 255));
+        const invG = 1 / Math.max(0.01, filters.gamma);
+
+        for (let i = 0; i < d.length; i += 4) {
+          let r = d[i], g = d[i + 1], b = d[i + 2];
+          if (filters.invert) { r = 255 - r; g = 255 - g; b = 255 - b; }
+          r = cFac * (r + bFac - 128) + 128;
+          g = cFac * (g + bFac - 128) + 128;
+          b = cFac * (b + bFac - 128) + 128;
+          if (filters.gamma !== 1) {
+            r = 255 * Math.pow(Math.max(0, Math.min(255, r)) / 255, invG);
+            g = 255 * Math.pow(Math.max(0, Math.min(255, g)) / 255, invG);
+            b = 255 * Math.pow(Math.max(0, Math.min(255, b)) / 255, invG);
+          }
+          if (filters.grayscale) {
+            const gr = 0.299 * r + 0.587 * g + 0.114 * b;
+            r = gr; g = gr; b = gr;
+          }
+          d[i] = Math.max(0, Math.min(255, r));
+          d[i + 1] = Math.max(0, Math.min(255, g));
+          d[i + 2] = Math.max(0, Math.min(255, b));
+        }
+
+        // Sharpen 3x3
+        if (filters.sharpen > 0) {
+          const src = new Uint8ClampedArray(d);
+          const s = filters.sharpen;
+          const ctr = 1 + 4 * s;
+          for (let y = 1; y < nh - 1; y++) {
+            for (let x = 1; x < nw - 1; x++) {
+              const idx = (y * nw + x) * 4;
+              for (let c = 0; c < 3; c++) {
+                const val = ctr * src[idx + c]
+                  - s * src[((y - 1) * nw + x) * 4 + c]
+                  - s * src[((y + 1) * nw + x) * 4 + c]
+                  - s * src[(y * nw + (x - 1)) * 4 + c]
+                  - s * src[(y * nw + (x + 1)) * 4 + c];
+                d[idx + c] = Math.max(0, Math.min(255, val));
+              }
+            }
+          }
+        }
+
+        // Sobel Edge
+        if (filters.edgeDetection === 'sobel') {
+          const src = new Uint8ClampedArray(d);
+          for (let y = 1; y < nh - 1; y++) {
+            for (let x = 1; x < nw - 1; x++) {
+              const idx = (y * nw + x) * 4;
+              const g1 = 0.299 * src[((y - 1) * nw + (x - 1)) * 4] + 0.587 * src[((y - 1) * nw + (x - 1)) * 4 + 1];
+              const g2 = 0.299 * src[((y - 1) * nw + (x + 1)) * 4] + 0.587 * src[((y - 1) * nw + (x + 1)) * 4 + 1];
+              const g3 = 0.299 * src[(y * nw + (x - 1)) * 4] + 0.587 * src[(y * nw + (x - 1)) * 4 + 1];
+              const g4 = 0.299 * src[(y * nw + (x + 1)) * 4] + 0.587 * src[(y * nw + (x + 1)) * 4 + 1];
+              const g5 = 0.299 * src[((y + 1) * nw + (x - 1)) * 4] + 0.587 * src[((y + 1) * nw + (x - 1)) * 4 + 1];
+              const g6 = 0.299 * src[((y + 1) * nw + (x + 1)) * 4] + 0.587 * src[((y + 1) * nw + (x + 1)) * 4 + 1];
+
+              const gx = (-1 * g1 + 1 * g2) + (-2 * g3 + 2 * g4) + (-1 * g5 + 1 * g6);
+              const gy = (-1 * g1 - 2 * g3 - 1 * g5) + (1 * g2 + 2 * g4 + 1 * g6);
+              const mag = Math.min(255, Math.hypot(gx, gy) * 1.5);
+              d[idx] = mag; d[idx + 1] = mag; d[idx + 2] = mag;
+            }
+          }
+        }
+
+        // Binarize Otsu
+        if (filters.binarize === 'otsu') {
+          const gray = new Uint8Array(nw * nh);
+          for (let i = 0; i < gray.length; i++) gray[i] = Math.round(0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2]);
+          const hist = new Int32Array(256);
+          for (let i = 0; i < gray.length; i++) hist[gray[i]]++;
+          let sum = 0; for (let i = 0; i < 256; i++) sum += i * hist[i];
+          let sumB = 0, wB = 0, maxVar = 0, thresh = 128;
+          for (let t = 0; t < 256; t++) {
+            wB += hist[t]; if (wB === 0) continue;
+            const wF = gray.length - wB; if (wF === 0) break;
+            sumB += t * hist[t];
+            const mB = sumB / wB; const mF = (sum - sumB) / wF;
+            const v = wB * wF * (mB - mF) * (mB - mF);
+            if (v > maxVar) { maxVar = v; thresh = t; }
+          }
+          for (let i = 0; i < gray.length; i++) {
+            const val = gray[i] >= thresh ? 255 : 0;
+            d[i * 4] = val; d[i * 4 + 1] = val; d[i * 4 + 2] = val;
+          }
+        }
+
+        oCtx.putImageData(imgData, 0, 0);
+        return out;
+      }
+
+      function refreshDisplay() {
+        if (state.currentImageIndex < 0 || !state.images[state.currentImageIndex]) return;
+        const cur = state.images[state.currentImageIndex];
+        processedCanvas = runFilterPipeline(cur.canvas, state.filters, state.rotation, state.flipH, state.flipV);
+        render();
+      }
+
+      // Main Canvas Renderer with Nabataean Glyph Badges
+      function render() {
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        ctx.fillStyle = '#080b10';
+        ctx.fillRect(0, 0, w, h);
+
+        if (!processedCanvas) return;
+
+        ctx.save();
+        ctx.translate(state.panX, state.panY);
+        ctx.scale(state.scale, state.scale);
+
+        if (state.splitView && state.images[state.currentImageIndex]) {
+          const splitImgX = (state.splitPos * w - state.panX) / state.scale;
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(0, 0, splitImgX, processedCanvas.height);
+          ctx.clip();
+          ctx.drawImage(processedCanvas, 0, 0);
+          ctx.restore();
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(splitImgX, 0, processedCanvas.width - splitImgX, processedCanvas.height);
+          ctx.clip();
+          ctx.drawImage(state.images[state.currentImageIndex].canvas, 0, 0);
+          ctx.restore();
+        } else {
+          ctx.drawImage(processedCanvas, 0, 0);
+        }
+
+        // Draw Bounding Boxes with Authentic Nabataean Badges
+        state.annotations.forEach((ann) => {
+          const isSel = state.selectedAnn && state.selectedAnn.id === ann.id;
+          const color = getClassColor(ann.classId);
+
+          ctx.save();
+          ctx.lineWidth = (isSel ? 2.5 : 1.5) / state.scale;
+          ctx.strokeStyle = isSel ? '#00f5d4' : color;
+          ctx.fillStyle = isSel ? `${color}40` : `${color}20`;
+          ctx.fillRect(ann.x, ann.y, ann.width, ann.height);
+          ctx.strokeRect(ann.x, ann.y, ann.width, ann.height);
+
+          // Draw 8 Control Handles on Selected Box
+          if (isSel) {
+            const handles = getHandles(ann);
+            const baseHs = 7 / state.scale;
+            handles.forEach(h => {
+              const isHov = state.hoveredHandle === h.name;
+              const hs = isHov ? 10 / state.scale : baseHs;
+              ctx.fillStyle = isHov ? '#ffbe0b' : '#ffffff';
+              ctx.strokeStyle = isHov ? '#ffffff' : '#00f5d4';
+              ctx.lineWidth = (isHov ? 2 : 1.5) / state.scale;
+              ctx.fillRect(h.x - hs / 2, h.y - hs / 2, hs, hs);
+              ctx.strokeRect(h.x - hs / 2, h.y - hs / 2, hs, hs);
+            });
+          } else {
+            // Subtle corner dots for unselected boxes
+            const hs = 4 / state.scale;
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1 / state.scale;
+            [
+              { x: ann.x, y: ann.y },
+              { x: ann.x + ann.width, y: ann.y },
+              { x: ann.x, y: ann.y + ann.height },
+              { x: ann.x + ann.width, y: ann.y + ann.height }
+            ].forEach(pt => {
+              ctx.fillRect(pt.x - hs / 2, pt.y - hs / 2, hs, hs);
+            });
+          }
+
+          // Nabataean Badge Pill at Top of Box
+          const cls = state.classes.find(c => c.id === ann.classId) || { id: ann.classId, char: '𐢀' };
+          const badgeH = 22 / state.scale;
+          const badgeW = 34 / state.scale;
+          const badgeX = ann.x;
+          const badgeY = ann.y - badgeH;
+
+          // Badge Background
+          ctx.fillStyle = isSel ? '#00f5d4' : color;
+          ctx.fillRect(badgeX, badgeY, badgeW, badgeH);
+
+          // Badge Class ID (small on left)
+          ctx.fillStyle = isSel ? '#05070a' : '#ffffff';
+          ctx.font = `bold ${Math.round(8 / state.scale)}px 'JetBrains Mono', monospace`;
+          ctx.fillText(`${ann.classId}`, badgeX + 3 / state.scale, badgeY + badgeH - 6 / state.scale);
+
+          // Large Nabataean Glyph in Badge (right)
+          ctx.fillStyle = isSel ? '#05070a' : '#ffffff';
+          ctx.font = `bold ${Math.round(15 / state.scale)}px 'Noto Sans Nabataean', 'Segoe UI Historic', sans-serif`;
+          ctx.fillText(cls.char, badgeX + 13 / state.scale, badgeY + badgeH - 4 / state.scale);
+
+          ctx.restore();
+        });
+
+        // Drawing in progress
+        if (state.isDrawing && state.currentRect) {
+          const color = getClassColor(state.activeClassId);
+          ctx.save();
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2 / state.scale;
+          ctx.fillStyle = `${color}35`;
+          ctx.fillRect(state.currentRect.x, state.currentRect.y, state.currentRect.width, state.currentRect.height);
+          ctx.strokeRect(state.currentRect.x, state.currentRect.y, state.currentRect.width, state.currentRect.height);
+          ctx.restore();
+        }
+
+        ctx.restore();
+
+        // Split view line
+        if (state.splitView) {
+          const splitX = state.splitPos * w;
+          ctx.strokeStyle = '#f77f00'; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.moveTo(splitX, 0); ctx.lineTo(splitX, h); ctx.stroke();
+          ctx.fillStyle = '#f77f00'; ctx.beginPath(); ctx.arc(splitX, h / 2, 12, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+
+      function fitToScreen() {
+        if (!processedCanvas) return;
+        const cw = canvas.width; const ch = canvas.height;
+        const iw = processedCanvas.width; const ih = processedCanvas.height;
+        state.scale = Math.min((cw * 0.9) / iw, (ch * 0.9) / ih, 1.5);
+        state.panX = (cw - iw * state.scale) / 2;
+        state.panY = (ch - ih * state.scale) / 2;
+        document.getElementById('zoomDisplay').textContent = `${Math.round(state.scale * 100)}%`;
+        render();
+      }
+
+      // Populate Character Grid (4 x 10 = 40 cards, NO SCROLL)
+      function renderCharGrid() {
+        const grid = document.getElementById('charGrid');
+        grid.innerHTML = '';
+
+        // Calculate count of each class in current annotations
+        const counts = {};
+        state.annotations.forEach(a => { counts[a.classId] = (counts[a.classId] || 0) + 1; });
+
+        state.classes.forEach((cls) => {
+          const count = counts[cls.id] || 0;
+          const card = document.createElement('div');
+          card.className = `char-card ${cls.id === state.activeClassId ? 'active' : ''} ${count > 0 ? 'has-count' : ''}`;
+          card.dataset.id = cls.id;
+          
+          card.innerHTML = `
+            <span class="char-card-id">#${cls.id}</span>
+            <div class="char-card-glyph">${cls.char}</div>
+            <span class="char-card-count">${count}</span>
+          `;
+
+          card.onclick = () => {
+            state.activeClassId = cls.id;
+            // Deselect previously labeled box so its class stays permanently fixed and unchanged
+            state.selectedAnn = null;
+            updateAnnotationsUI();
+            renderCharGrid();
+            document.getElementById('activeCharLabel').textContent = `${cls.char} (#${cls.id}) - ${cls.name_ar}`;
+            render();
+          };
+
+          grid.appendChild(card);
+        });
+
+        const activeCls = state.classes.find(c => c.id === state.activeClassId) || state.classes[0];
+        document.getElementById('activeCharLabel').textContent = `${activeCls.char} (#${activeCls.id}) - ${activeCls.name_ar}`;
+      }
+
+      function updateAnnotationsUI() {
+        const list = document.getElementById('annList');
+        list.innerHTML = '';
+        document.getElementById('annTotalBadge').textContent = `${state.annotations.length} عناصر`;
+
+        state.annotations.forEach((ann, idx) => {
+          const cls = state.classes.find(c => c.id === ann.classId) || { char: '𐢀', name_ar: `فئة ${ann.classId}` };
+          const row = document.createElement('div');
+          row.style.display = 'flex';
+          row.style.alignItems = 'center';
+          row.style.justifyContent = 'space-between';
+          row.style.padding = '3px 6px';
+          row.style.background = state.selectedAnn && state.selectedAnn.id === ann.id ? '#202b3e' : '#151d2c';
+          row.style.border = '1px solid ' + (state.selectedAnn && state.selectedAnn.id === ann.id ? '#f77f00' : '#232f44');
+          row.style.borderRadius = '4px';
+          row.style.fontSize = '0.74rem';
+          row.style.cursor = 'pointer';
+
+          row.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 5px;">
+              <span style="display: inline-block; width: 6px; height: 16px; border-radius: 2px; background: ${getClassColor(ann.classId)};"></span>
+              <span style="font-family: var(--font-nabataean); font-size: 1.1rem; color: #fff;">${cls.char}</span>
+              <span>#${ann.classId} (${cls.name_ar})</span>
+            </div>
+            <button class="btn btn-sm" style="padding: 0 4px; font-size: 0.7rem;">🗑️</button>
+          `;
+
+          row.querySelector('button').onclick = (e) => {
+            e.stopPropagation();
+            state.annotations = state.annotations.filter(a => a.id !== ann.id);
+            if (state.selectedAnn && state.selectedAnn.id === ann.id) state.selectedAnn = null;
+            if (state.images[state.currentImageIndex]) state.images[state.currentImageIndex].annotations = state.annotations;
+            renderCharGrid();
+            updateAnnotationsUI();
+            updateThumbnails();
+            render();
+          };
+
+          row.onclick = () => {
+            state.selectedAnn = ann;
+            state.activeClassId = ann.classId;
+            renderCharGrid();
+            updateAnnotationsUI();
+            render();
+          };
+
+          list.appendChild(row);
+        });
+
+        renderCharGrid();
+      }
+
+      state.labelsCache = {}; // Cache of baseName -> raw YOLO text/lines
+
+      // Universal YOLO TXT parser to annotation objects
+      function parseYoloToAnnotations(rawLinesOrText, imgWidth, imgHeight) {
+        if (!rawLinesOrText) return [];
+        const lines = Array.isArray(rawLinesOrText) 
+          ? rawLinesOrText 
+          : rawLinesOrText.trim().split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0 && !l.startsWith('#'));
+
+        const anns = [];
+        lines.forEach((line, idx) => {
+          if (typeof line !== 'string') return;
+          const parts = line.trim().split(/\s+/);
+          if (parts.length >= 5) {
+            const classId = parseInt(parts[0], 10);
+            const xc = parseFloat(parts[1]);
+            const yc = parseFloat(parts[2]);
+            const w = parseFloat(parts[3]);
+            const h = parseFloat(parts[4]);
+
+            if (isNaN(xc) || isNaN(yc) || isNaN(w) || isNaN(h)) return;
+
+            const boxW = Math.max(2, Math.round(w * imgWidth));
+            const boxH = Math.max(2, Math.round(h * imgHeight));
+            const boxX = Math.max(0, Math.round((xc - w / 2) * imgWidth));
+            const boxY = Math.max(0, Math.round((yc - h / 2) * imgHeight));
+
+            anns.push({
+              id: `ann_${Date.now()}_${idx}_${Math.random().toString(36).substr(2, 4)}`,
+              x: boxX,
+              y: boxY,
+              width: Math.min(imgWidth - boxX, boxW),
+              height: Math.min(imgHeight - boxY, boxH),
+              classId: isNaN(classId) ? 0 : classId
+            });
+          }
+        });
+        return anns;
+      }
+
+      // Name normalizer for ultra-forgiving filename matching
+      function normalizeBaseName(name) {
+        if (!name) return '';
+        return name
+          .replace(/\.[^/.]+$/, '') // remove extension
+          .replace(/^(labels_|label_|annotation_|annotations_|ann_)/i, '')
+          .replace(/(_labels|_label|_annotations|_annotation|_yolo)$/i, '')
+          .replace(/[\s\-_]+/g, '')
+          .toLowerCase();
+      }
+
+      function findCachedLabelsForImage(imgName, imgWidth, imgHeight) {
+        if (!imgName || !imgWidth || !imgHeight) return [];
+        const cleanImg = normalizeBaseName(imgName);
+        const rawImgBase = imgName.replace(/\.[^/.]+$/, '').trim().toLowerCase();
+
+        // 1. Direct match
+        if (state.labelsCache[rawImgBase]) {
+          return parseYoloToAnnotations(state.labelsCache[rawImgBase], imgWidth, imgHeight);
+        }
+        // 2. Normalized clean match
+        for (const key in state.labelsCache) {
+          if (normalizeBaseName(key) === cleanImg) {
+            return parseYoloToAnnotations(state.labelsCache[key], imgWidth, imgHeight);
+          }
+        }
+        // 3. Substring match
+        for (const key in state.labelsCache) {
+          const cleanKey = normalizeBaseName(key);
+          if (cleanKey.includes(cleanImg) || cleanImg.includes(cleanKey)) {
+            return parseYoloToAnnotations(state.labelsCache[key], imgWidth, imgHeight);
+          }
+        }
+        return [];
+      }
+
+      // Update Top Bar Image Status Card (Green / Red indicator box)
+      function updateImageStatusUI(cur) {
+        const card = document.getElementById('imgStatusCard');
+        const nameEl = document.getElementById('statusImgName');
+        const badgeEl = document.getElementById('statusIndicatorBadge');
+        const textEl = document.getElementById('statusIndicatorText');
+
+        if (!card || !nameEl || !badgeEl || !textEl) return;
+
+        if (!cur) {
+          nameEl.textContent = '🖼️ لا توجد صورة';
+          card.className = 'image-status-card is-unlabeled';
+          badgeEl.className = 'status-indicator-badge is-unlabeled';
+          textEl.textContent = 'غير موسمة (0)';
+          return;
+        }
+
+        nameEl.textContent = `🖼️ ${cur.name}`;
+        nameEl.title = cur.name;
+
+        const count = cur.annotations ? cur.annotations.length : 0;
+        if (count > 0) {
+          card.className = 'image-status-card is-labeled';
+          badgeEl.className = 'status-indicator-badge is-labeled';
+          textEl.textContent = `🟢 موسمة (${count} حرف)`;
+        } else {
+          card.className = 'image-status-card is-unlabeled';
+          badgeEl.className = 'status-indicator-badge is-unlabeled';
+          textEl.textContent = '🔴 غير موسمة (0)';
+        }
+      }
+
+      function addImage(imageOrCanvas, name = 'inscription.jpg') {
+        const off = document.createElement('canvas');
+        const w = imageOrCanvas.width || imageOrCanvas.naturalWidth || 800;
+        const h = imageOrCanvas.height || imageOrCanvas.naturalHeight || 600;
+        off.width = w;
+        off.height = h;
+        off.getContext('2d').drawImage(imageOrCanvas, 0, 0);
+
+        const existingAnns = findCachedLabelsForImage(name, w, h);
+
+        const imgObj = {
+          id: `img_${Date.now()}_${state.images.length}`,
+          name: name,
+          canvas: off,
+          annotations: existingAnns
+        };
+        state.images.push(imgObj);
+        selectImage(state.images.length - 1);
+        updateThumbnails();
+      }
+
+      function selectImage(idx) {
+        if (idx < 0 || idx >= state.images.length) return;
+        state.currentImageIndex = idx;
+        const cur = state.images[idx];
+
+        // Check if labels can be populated from labelsCache
+        if (!cur.annotations || cur.annotations.length === 0) {
+          const cached = findCachedLabelsForImage(cur.name, cur.canvas.width, cur.canvas.height);
+          if (cached.length > 0) {
+            cur.annotations = cached;
+          }
+        }
+
+        state.annotations = cur.annotations || [];
+        state.selectedAnn = null;
+        processedCanvas = runFilterPipeline(cur.canvas, state.filters, state.rotation, state.flipH, state.flipV);
+        fitToScreen();
+        updateThumbnails();
+        updateAnnotationsUI();
+        updateImageStatusUI(cur);
+        document.getElementById('imgCounter').textContent = `${idx + 1} / ${state.images.length} صور`;
+        render();
+      }
+
+      function updateThumbnails() {
+        const strip = document.getElementById('thumbStrip');
+        if (!strip) return;
+        const addBtn = strip.querySelector('.thumb-add');
+        strip.innerHTML = '';
+        if (addBtn) strip.appendChild(addBtn);
+
+        state.images.forEach((img, idx) => {
+          const annCount = img.annotations ? img.annotations.length : 0;
+          const card = document.createElement('div');
+          const isCurrent = idx === state.currentImageIndex;
+          card.className = `thumb-card ${isCurrent ? 'active' : ''} ${annCount > 0 ? 'is-labeled' : 'is-unlabeled'}`;
+          card.title = `${img.name} (${annCount > 0 ? annCount + ' حروف موسمة' : 'غير موسمة'})`;
+
+          const tc = document.createElement('canvas');
+          tc.width = 70; tc.height = 46;
+          tc.getContext('2d').drawImage(img.canvas, 0, 0, 70, 46);
+
+          const nameTag = document.createElement('div');
+          nameTag.className = 'thumb-name-tooltip';
+          nameTag.textContent = img.name;
+
+          const badge = document.createElement('span');
+          badge.className = `thumb-badge ${annCount > 0 ? 'labeled' : 'unlabeled'}`;
+          badge.textContent = annCount > 0 ? `✓ ${annCount}` : '0';
+
+          card.appendChild(tc);
+          card.appendChild(nameTag);
+          card.appendChild(badge);
+          card.onclick = () => selectImage(idx);
+
+          if (addBtn) strip.insertBefore(card, addBtn);
+          else strip.appendChild(card);
+        });
+
+        if (state.currentImageIndex >= 0 && state.images[state.currentImageIndex]) {
+          updateImageStatusUI(state.images[state.currentImageIndex]);
+        }
+      }
+
+      // Coordinate helper
+      // Coordinate helper
+      function toImgCoords(sx, sy) {
+        return { x: (sx - state.panX) / state.scale, y: (sy - state.panY) / state.scale };
+      }
+
+      function toScreenCoords(ix, iy) {
+        return { x: ix * state.scale + state.panX, y: iy * state.scale + state.panY };
+      }
+
+      // 8 Control Handles for Resizing
+      function getHandles(ann) {
+        const { x, y, width: w, height: h } = ann;
+        return [
+          { name: 'nw', x: x, y: y },
+          { name: 'n',  x: x + w / 2, y: y },
+          { name: 'ne', x: x + w, y: y },
+          { name: 'e',  x: x + w, y: y + h / 2 },
+          { name: 'se', x: x + w, y: y + h },
+          { name: 's',  x: x + w / 2, y: y + h },
+          { name: 'sw', x: x, y: y + h },
+          { name: 'w',  x: x, y: y + h / 2 }
+        ];
+      }
+
+      function getHandleAt(sx, sy, ann) {
+        if (!ann) return null;
+        const handles = getHandles(ann);
+        const radius = 12; // Screen px tolerance
+        for (const h of handles) {
+          const scr = toScreenCoords(h.x, h.y);
+          if (Math.hypot(sx - scr.x, sy - scr.y) <= radius) {
+            return h.name;
+          }
+        }
+        return null;
+      }
+
+      function getHandleCursor(handle) {
+        switch (handle) {
+          case 'nw': case 'se': return 'nwse-resize';
+          case 'ne': case 'sw': return 'nesw-resize';
+          case 'n':  case 's':  return 'ns-resize';
+          case 'e':  case 'w':  return 'ew-resize';
+          default: return 'default';
+        }
+      }
+
+      function resizeAnnWithHandle(ann, initial, handle, dx, dy) {
+        let { x, y, width: w, height: h } = initial;
+
+        if (handle.includes('e')) w += dx;
+        if (handle.includes('s')) h += dy;
+        if (handle.includes('w')) {
+          x += dx;
+          w -= dx;
+        }
+        if (handle.includes('n')) {
+          y += dy;
+          h -= dy;
+        }
+
+        // Support inverted resizing (flip)
+        if (w < 4) {
+          if (handle.includes('w')) x += w - 4;
+          w = 4;
+        }
+        if (h < 4) {
+          if (handle.includes('n')) y += h - 4;
+          h = 4;
+        }
+
+        ann.x = Math.round(x);
+        ann.y = Math.round(y);
+        ann.width = Math.round(w);
+        ann.height = Math.round(h);
+      }
+
+      function getAnnotationAt(ix, iy) {
+        for (let i = state.annotations.length - 1; i >= 0; i--) {
+          const a = state.annotations[i];
+          if (ix >= a.x && ix <= a.x + a.width && iy >= a.y && iy <= a.y + a.height) {
+            return a;
+          }
+        }
+        return null;
+      }
+
+      // Interaction State Variables
+      state.isResizing = false;
+      state.isDraggingAnn = false;
+      state.activeHandle = null;
+      state.hoveredHandle = null;
+      state.hoveredAnn = null;
+      state.initialAnnState = null;
+
+      // Mouse & Canvas Events
+      canvas.onwheel = (e) => {
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left; const my = e.clientY - rect.top;
+        const factor = e.deltaY < 0 ? 1.15 : 0.87;
+        const prev = state.scale;
+        state.scale = Math.max(0.05, Math.min(30, state.scale * factor));
+        const imgX = (mx - state.panX) / prev;
+        const imgY = (my - state.panY) / prev;
+        state.panX = mx - imgX * state.scale;
+        state.panY = my - imgY * state.scale;
+        document.getElementById('zoomDisplay').textContent = `${Math.round(state.scale * 100)}%`;
+        render();
+      };
+
+      canvas.onmousedown = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const sx = e.clientX - rect.left; const sy = e.clientY - rect.top;
+        const pt = toImgCoords(sx, sy);
+        state.dragStartX = pt.x; state.dragStartY = pt.y;
+
+        if (e.button === 1 || e.button === 2 || state.activeTool === 'pan' || e.spaceKey) {
+          state.isPanning = true;
+          state.dragStartX = sx; state.dragStartY = sy;
+          canvas.style.cursor = 'grabbing';
+          return;
+        }
+
+        if (e.button !== 0) return;
+
+        // 1. Check handle click on selected annotation
+        if (state.selectedAnn) {
+          const handle = getHandleAt(sx, sy, state.selectedAnn);
+          if (handle) {
+            state.isResizing = true;
+            state.activeHandle = handle;
+            state.dragStartX = pt.x;
+            state.dragStartY = pt.y;
+            state.initialAnnState = { ...state.selectedAnn };
+            return;
+          }
+        }
+
+        // 2. Check hit on annotations
+        const hit = getAnnotationAt(pt.x, pt.y);
+
+        if (state.activeTool === 'select' || (hit && (state.selectedAnn && state.selectedAnn.id === hit.id || e.altKey))) {
+          if (hit) {
+            state.selectedAnn = hit;
+            state.activeClassId = hit.classId;
+            state.isDraggingAnn = true;
+            state.dragStartX = pt.x;
+            state.dragStartY = pt.y;
+            state.initialAnnState = { ...hit };
+            updateAnnotationsUI();
+            renderCharGrid();
+            render();
+            return;
+          } else {
+            state.selectedAnn = null;
+            updateAnnotationsUI();
+            render();
+            return;
+          }
+        }
+
+        // In Rect tool mode, if user clicks inside the currently selected box, allow dragging/moving it
+        if (hit && state.selectedAnn && hit.id === state.selectedAnn.id) {
+          state.isDraggingAnn = true;
+          state.dragStartX = pt.x;
+          state.dragStartY = pt.y;
+          state.initialAnnState = { ...hit };
+          return;
+        }
+
+        // In Rect tool mode, if clicking another existing box directly, select it
+        if (hit) {
+          state.selectedAnn = hit;
+          state.activeClassId = hit.classId;
+          updateAnnotationsUI();
+          renderCharGrid();
+          render();
+          return;
+        }
+
+        // 3. Draw new rectangle
+        if (state.activeTool === 'rect') {
+          state.isDrawing = true;
+          state.currentRect = { x: pt.x, y: pt.y, width: 0, height: 0 };
+          state.selectedAnn = null;
+          updateAnnotationsUI();
+          render();
+        }
+      };
+
+      window.onmousemove = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const sx = e.clientX - rect.left; const sy = e.clientY - rect.top;
+        const pt = toImgCoords(sx, sy);
+
+        if (state.isPanning) {
+          state.panX += (sx - state.dragStartX);
+          state.panY += (sy - state.dragStartY);
+          state.dragStartX = sx; state.dragStartY = sy;
+          render();
+          return;
+        }
+
+        // Resizing with handle
+        if (state.isResizing && state.selectedAnn && state.initialAnnState) {
+          const dx = pt.x - state.dragStartX;
+          const dy = pt.y - state.dragStartY;
+          resizeAnnWithHandle(state.selectedAnn, state.initialAnnState, state.activeHandle, dx, dy);
+          if (state.images[state.currentImageIndex]) state.images[state.currentImageIndex].annotations = state.annotations;
+          updateSelectedBoxInspector();
+          render();
+          return;
+        }
+
+        // Dragging annotation position
+        if (state.isDraggingAnn && state.selectedAnn && state.initialAnnState) {
+          const dx = pt.x - state.dragStartX;
+          const dy = pt.y - state.dragStartY;
+          state.selectedAnn.x = Math.round(state.initialAnnState.x + dx);
+          state.selectedAnn.y = Math.round(state.initialAnnState.y + dy);
+          if (state.images[state.currentImageIndex]) state.images[state.currentImageIndex].annotations = state.annotations;
+          updateSelectedBoxInspector();
+          render();
+          return;
+        }
+
+        // Drawing new rect
+        if (state.isDrawing && state.currentRect) {
+          state.currentRect = {
+            x: Math.min(state.dragStartX, pt.x),
+            y: Math.min(state.dragStartY, pt.y),
+            width: Math.abs(pt.x - state.dragStartX),
+            height: Math.abs(pt.y - state.dragStartY)
+          };
+          render();
+          return;
+        }
+
+        // Hover detection & dynamic cursor
+        if (state.selectedAnn) {
+          const handle = getHandleAt(sx, sy, state.selectedAnn);
+          if (handle) {
+            state.hoveredHandle = handle;
+            canvas.style.cursor = getHandleCursor(handle);
+            render();
+            return;
+          }
+        }
+        state.hoveredHandle = null;
+
+        const hit = getAnnotationAt(pt.x, pt.y);
+        state.hoveredAnn = hit;
+
+        if (state.activeTool === 'pan') {
+          canvas.style.cursor = 'grab';
+        } else if (hit) {
+          canvas.style.cursor = (state.selectedAnn && state.selectedAnn.id === hit.id) ? 'move' : 'pointer';
+        } else if (state.activeTool === 'rect') {
+          canvas.style.cursor = 'crosshair';
+        } else {
+          canvas.style.cursor = 'default';
+        }
+
+        render();
+      };
+
+      window.onmouseup = () => {
+        if (state.isPanning) {
+          state.isPanning = false;
+          canvas.style.cursor = state.activeTool === 'pan' ? 'grab' : 'default';
+        }
+
+        if (state.isResizing || state.isDraggingAnn) {
+          state.isResizing = false;
+          state.isDraggingAnn = false;
+          state.activeHandle = null;
+          state.initialAnnState = null;
+          if (state.images[state.currentImageIndex]) state.images[state.currentImageIndex].annotations = state.annotations;
+          updateAnnotationsUI();
+          updateThumbnails();
+          render();
+        }
+
+        if (state.isDrawing && state.currentRect) {
+          if (state.currentRect.width > 5 && state.currentRect.height > 5) {
+            const newAnn = {
+              id: `ann_${Date.now()}`,
+              x: Math.round(state.currentRect.x),
+              y: Math.round(state.currentRect.y),
+              width: Math.round(state.currentRect.width),
+              height: Math.round(state.currentRect.height),
+              classId: state.activeClassId
+            };
+            state.annotations.push(newAnn);
+            state.selectedAnn = newAnn;
+            if (state.images[state.currentImageIndex]) state.images[state.currentImageIndex].annotations = state.annotations;
+            updateAnnotationsUI();
+            updateThumbnails();
+          }
+          state.isDrawing = false;
+          state.currentRect = null;
+          render();
+        }
+      };
+
+      // File Inputs
+      document.getElementById('fileClassesInput').onchange = function() {
+        if (this.files && this.files[0]) {
+          const r = new FileReader();
+          r.onload = (evt) => {
+            const lines = evt.target.result.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0 && !l.startsWith('#'));
+            const list = [];
+            lines.forEach((line, idx) => {
+              let clean = line.replace(/^-\s*/, '').replace(/^\d+:\s*/, '').trim();
+              const pMatch = clean.match(/^(\S+)\s*\((.+?)\)$/);
+              if (pMatch) {
+                list.push({ id: idx, char: pMatch[1], name_ar: pMatch[2] });
+              } else {
+                list.push({ id: idx, char: clean, name_ar: clean });
+              }
+            });
+            if (list.length > 0) {
+              state.classes = list;
+              state.activeClassId = list[0].id;
+              renderCharGrid();
+              showToast(`تم استيراد ${list.length} فئة بنجاح`, 'success');
+            }
+          };
+          r.readAsText(this.files[0]);
+        }
+        this.value = '';
+      };
+
+      // Batch Import YOLO TXT Labels and match by filename
+      function handleImportTxtLabels(files) {
+        if (!files || files.length === 0) return;
+        const txtFiles = Array.from(files).filter(f => f.name.toLowerCase().endsWith('.txt') && !f.name.toLowerCase().includes('classes'));
+        if (txtFiles.length === 0) {
+          showToast('لم يتم العثور على ملفات .txt صالحة في المجلد/المحدد', 'error');
+          return;
+        }
+
+        // Set path / folder name in top input box
+        const dirInp = document.getElementById('txtLabelsDirPath');
+        if (dirInp) {
+          if (files[0].webkitRelativePath) {
+            const folder = files[0].webkitRelativePath.split('/')[0];
+            dirInp.value = `📁 ${folder} (${txtFiles.length} ملف)`;
+          } else {
+            dirInp.value = `📁 ${txtFiles.length} ملفات توسيم`;
+          }
+        }
+
+        let processedCount = 0;
+
+        txtFiles.forEach(file => {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            const rawBase = file.name.replace(/\.txt$/i, '').trim().toLowerCase();
+            const rawContent = evt.target.result;
+
+            // Store raw content in labelsCache
+            state.labelsCache[rawBase] = rawContent;
+
+            processedCount++;
+            if (processedCount === txtFiles.length) {
+              let matchedCount = 0;
+
+              // Match all currently loaded images
+              state.images.forEach(img => {
+                const anns = findCachedLabelsForImage(img.name, img.canvas.width, img.canvas.height);
+                if (anns.length > 0) {
+                  img.annotations = anns;
+                  matchedCount++;
+                }
+              });
+
+              // If current image matched, update state.annotations
+              if (state.currentImageIndex >= 0 && state.images[state.currentImageIndex]) {
+                const cur = state.images[state.currentImageIndex];
+                state.annotations = cur.annotations || [];
+                updateImageStatusUI(cur);
+              }
+
+              updateThumbnails();
+              updateAnnotationsUI();
+              render();
+
+              if (matchedCount > 0) {
+                showToast(`✅ تم مطابقة وإظهار الأوسمة على ${matchedCount} صورة بنجاح!`, 'success');
+              } else {
+                showToast(`📁 تم حفظ ${txtFiles.length} ملف توسيم في الذاكرة. عند فتح الصور المقابلة ستظهر أوسمتها تلقائياً.`, 'info');
+              }
+            }
+          };
+          reader.readAsText(file);
+        });
+      }
+
+      const fileLabelsInp = document.getElementById('fileLabelsInput');
+      if (fileLabelsInp) {
+        fileLabelsInp.onchange = function() {
+          handleImportTxtLabels(this.files);
+          this.value = '';
+        };
+      }
+
+      const fileLabelsFolderInp = document.getElementById('fileLabelsFolderInput');
+      if (fileLabelsFolderInp) {
+        fileLabelsFolderInp.onchange = function() {
+          handleImportTxtLabels(this.files);
+          this.value = '';
+        };
+      }
+
+      document.getElementById('fileImgInput').onchange = function() {
+        if (this.files && this.files.length > 0) {
+          Array.from(this.files).forEach(f => {
+            const r = new FileReader();
+            r.onload = (evt) => {
+              const img = new Image();
+              img.onload = () => addImage(img, f.name);
+              img.src = evt.target.result;
+            };
+            r.readAsDataURL(f);
+          });
+          showToast(`تم تحميل ${this.files.length} صورة بنجاح`, 'success');
+        }
+        this.value = '';
+      };
+
+      // Drag & Drop for Images and TXT files directly on the workspace
+      const dropZone = document.getElementById('canvasContainer');
+      if (dropZone) {
+        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.style.outline = '2px dashed var(--accent-orange)'; };
+        dropZone.ondragleave = () => { dropZone.style.outline = 'none'; };
+        dropZone.ondrop = (e) => {
+          e.preventDefault();
+          dropZone.style.outline = 'none';
+          if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            const files = Array.from(e.dataTransfer.files);
+            const imageFiles = files.filter(f => f.type.startsWith('image/'));
+            const txtFiles = files.filter(f => f.name.toLowerCase().endsWith('.txt') && !f.name.toLowerCase().includes('classes'));
+
+            if (imageFiles.length > 0) {
+              imageFiles.forEach(f => {
+                const r = new FileReader();
+                r.onload = (evt) => {
+                  const img = new Image();
+                  img.onload = () => addImage(img, f.name);
+                  img.src = evt.target.result;
+                };
+                r.readAsDataURL(f);
+              });
+              showToast(`تم تحميل ${imageFiles.length} صورة عبر السحب والإفلات`, 'success');
+            }
+
+            if (txtFiles.length > 0) {
+              setTimeout(() => handleImportTxtLabels(txtFiles), 300);
+            }
+          }
+        };
+      }
+
+      // Top Toolbar Buttons
+      const setTool = (tool) => {
+        state.activeTool = tool;
+        ['toolSelect', 'toolRect', 'toolPan'].forEach(id => {
+          document.getElementById(id).classList.toggle('active', id === (tool === 'select' ? 'toolSelect' : tool === 'rect' ? 'toolRect' : 'toolPan'));
+        });
+      };
+      document.getElementById('toolSelect').onclick = () => setTool('select');
+      document.getElementById('toolRect').onclick = () => setTool('rect');
+      document.getElementById('toolPan').onclick = () => setTool('pan');
+
+      document.getElementById('btnDelete').onclick = () => {
+        if (!state.selectedAnn) return;
+        state.annotations = state.annotations.filter(a => a.id !== state.selectedAnn.id);
+        state.selectedAnn = null;
+        if (state.images[state.currentImageIndex]) state.images[state.currentImageIndex].annotations = state.annotations;
+        updateAnnotationsUI(); updateThumbnails(); render();
+      };
+
+      document.getElementById('btnPrevImg').onclick = () => { if (state.currentImageIndex > 0) selectImage(state.currentImageIndex - 1); };
+      document.getElementById('btnNextImg').onclick = () => { if (state.currentImageIndex < state.images.length - 1) selectImage(state.currentImageIndex + 1); };
+
+      document.getElementById('btnZoomIn').onclick = () => { state.scale *= 1.25; fitZoom(); };
+      document.getElementById('btnZoomOut').onclick = () => { state.scale *= 0.8; fitZoom(); };
+      document.getElementById('btnFit').onclick = () => fitToScreen();
+      function fitZoom() {
+        document.getElementById('zoomDisplay').textContent = `${Math.round(state.scale * 100)}%`;
+        render();
+      }
+
+      document.getElementById('toggleSplitBtn').onclick = () => {
+        state.splitView = !state.splitView;
+        document.getElementById('toggleSplitBtn').classList.toggle('active', state.splitView);
+        render();
+      };
+
+      // Filters
+      const bindRange = (id, valId, key, suffix = '') => {
+        document.getElementById(id).oninput = (e) => {
+          state.filters[key] = parseFloat(e.target.value);
+          document.getElementById(valId).textContent = `${e.target.value}${suffix}`;
+          refreshDisplay();
+        };
+      };
+      bindRange('sliderBright', 'valBright', 'brightness');
+      bindRange('sliderContrast', 'valContrast', 'contrast');
+      bindRange('sliderGamma', 'valGamma', 'gamma');
+      bindRange('sliderSharpen', 'valSharpen', 'sharpen');
+
+      document.getElementById('chkInvert').onchange = (e) => { state.filters.invert = e.target.checked; refreshDisplay(); };
+      document.getElementById('chkEqualize').onchange = (e) => { state.filters.equalizeHist = e.target.checked; refreshDisplay(); };
+      document.getElementById('selEdge').onchange = (e) => { state.filters.edgeDetection = e.target.value; refreshDisplay(); };
+      document.getElementById('selBinarize').onchange = (e) => { state.filters.binarize = e.target.value; refreshDisplay(); };
+
+      // Rotation
+      document.getElementById('sliderRot').oninput = (e) => {
+        state.rotation = parseInt(e.target.value, 10);
+        document.getElementById('valRot').textContent = `${state.rotation}°`;
+        refreshDisplay();
+      };
+      document.getElementById('btnCW').onclick = () => {
+        state.rotation = (state.rotation + 90) % 360;
+        document.getElementById('sliderRot').value = state.rotation;
+        document.getElementById('valRot').textContent = `${state.rotation}°`;
+        refreshDisplay();
+      };
+      document.getElementById('btnCCW').onclick = () => {
+        state.rotation = (state.rotation - 90) % 360;
+        document.getElementById('sliderRot').value = state.rotation;
+        document.getElementById('valRot').textContent = `${state.rotation}°`;
+        refreshDisplay();
+      };
+      document.getElementById('btnFlH').onclick = () => { state.flipH = !state.flipH; refreshDisplay(); };
+      document.getElementById('btnFlV').onclick = () => { state.flipV = !state.flipV; refreshDisplay(); };
+      document.getElementById('btnResetRot').onclick = () => {
+        state.rotation = 0; state.flipH = false; state.flipV = false;
+        document.getElementById('sliderRot').value = 0; document.getElementById('valRot').textContent = '0°';
+        refreshDisplay();
+      };
+
+      document.getElementById('btnResetFilters').onclick = () => {
+        state.filters = { brightness: 0, contrast: 0, exposure: 0, gamma: 1.0, invert: false, grayscale: false, equalizeHist: false, sharpen: 0, edgeDetection: 'none', binarize: 'none', colorMap: 'none' };
+        document.getElementById('sliderBright').value = 0; document.getElementById('valBright').textContent = '0';
+        document.getElementById('sliderContrast').value = 0; document.getElementById('valContrast').textContent = '0';
+        document.getElementById('sliderGamma').value = 1.0; document.getElementById('valGamma').textContent = '1.0';
+        document.getElementById('sliderSharpen').value = 0; document.getElementById('valSharpen').textContent = '0';
+        document.getElementById('chkInvert').checked = false;
+        document.getElementById('chkEqualize').checked = false;
+        document.getElementById('selEdge').value = 'none';
+        document.getElementById('selBinarize').value = 'none';
+        refreshDisplay();
+      };
+
+      // Presets Chips
+      document.querySelectorAll('.chip-btn[data-preset]').forEach(btn => {
+        btn.onclick = () => {
+          const p = btn.dataset.preset;
+          state.filters = { brightness: 0, contrast: 0, exposure: 0, gamma: 1.0, invert: false, grayscale: false, equalizeHist: false, sharpen: 0, edgeDetection: 'none', binarize: 'none', colorMap: 'none' };
+          if (p === 'stone_boost') { state.filters.equalizeHist = true; state.filters.sharpen = 1.6; state.filters.contrast = 0.35; }
+          else if (p === 'dark_invert') { state.filters.invert = true; state.filters.contrast = 0.45; state.filters.sharpen = 1.2; }
+          else if (p === 'deep_contrast') { state.filters.contrast = 0.65; state.filters.sharpen = 1.8; }
+          else if (p === 'otsu_clean') { state.filters.binarize = 'otsu'; }
+          else if (p === 'sobel_edges') { state.filters.edgeDetection = 'sobel'; state.filters.invert = true; }
+          refreshDisplay();
+          showToast(`تم تطبيق قالب "${p}"`, 'success');
+        };
+      });
+
+      // Export Modal Openers
+      document.getElementById('btnOpenExport').onclick = () => document.getElementById('exportModal').classList.add('show');
+      document.getElementById('btnCloseExport').onclick = () => document.getElementById('exportModal').classList.remove('show');
+
+      // Direct Save Labels TXT function
+      function saveLabelsTxt() {
+        if (!processedCanvas) {
+          showToast('لا توجد صورة محددة لحفظ الليبل لها', 'error');
+          return;
+        }
+        const cur = state.images[state.currentImageIndex];
+        const lines = state.annotations.map(a => {
+          const rawXc = (a.x + a.width / 2) / processedCanvas.width;
+          const rawYc = (a.y + a.height / 2) / processedCanvas.height;
+          const rawW = a.width / processedCanvas.width;
+          const rawH = a.height / processedCanvas.height;
+
+          // Strict normalized YOLO bounds [0.000000 - 1.000000]
+          const xc = Math.max(0.000001, Math.min(0.999999, rawXc)).toFixed(6);
+          const yc = Math.max(0.000001, Math.min(0.999999, rawYc)).toFixed(6);
+          const w = Math.max(0.000001, Math.min(1.0, rawW)).toFixed(6);
+          const h = Math.max(0.000001, Math.min(1.0, rawH)).toFixed(6);
+
+          return `${a.classId} ${xc} ${yc} ${w} ${h}`;
+        }).join('\n');
+
+        const baseName = cur ? cur.name.replace(/\.[^/.]+$/, '') : 'labels';
+        const blob = new Blob([lines], { type: 'text/plain;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `${baseName}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+
+        showToast(`✅ تم حفظ ملف الليبل (${baseName}.txt) بنجاح [${state.annotations.length} توسيم]`, 'success');
+      }
+
+      // Auto-Crop Characters into Letter Folders
+      async function exportCroppedCharacters() {
+        if (!state.images || state.images.length === 0) {
+          showToast('لا توجد صور محملة لقص الحروف منها', 'error');
+          return;
+        }
+
+        let totalBoxes = 0;
+        state.images.forEach(img => {
+          if (img.annotations && img.annotations.length > 0) totalBoxes += img.annotations.length;
+        });
+
+        if (totalBoxes === 0) {
+          showToast('لا توجد صناديق حروف مرسومة على أي صورة لقصها', 'error');
+          return;
+        }
+
+        showToast(`⏳ جاري قص ${totalBoxes} حرف وتجهيز الأرشيف المنظم...`, 'info');
+
+        const zip = new JSZip();
+        const rootFolder = zip.folder('real_nabataean_dataset');
+        const counts = {};
+
+        for (const imgData of state.images) {
+          if (!imgData.annotations || imgData.annotations.length === 0) continue;
+
+          const srcCanvas = imgData.canvas;
+          const cropCanvas = document.createElement('canvas');
+          const cropCtx = cropCanvas.getContext('2d');
+
+          for (const ann of imgData.annotations) {
+            const cls = state.classes.find(c => c.id === ann.classId) || { id: ann.classId, name_en: `CLASS_${ann.classId}` };
+            const folderName = cls.name_en || `CLASS_${cls.id}`;
+            counts[folderName] = (counts[folderName] || 0) + 1;
+
+            cropCanvas.width = 224;
+            cropCanvas.height = 224;
+
+            const scale = (224 * 0.85) / Math.max(ann.width, ann.height);
+            const dw = Math.max(10, Math.round(ann.width * scale));
+            const dh = Math.max(10, Math.round(ann.height * scale));
+            const dx = Math.round((224 - dw) / 2);
+            const dy = Math.round((224 - dh) / 2);
+
+            // 1. Fill 224x224 background with stone texture from surrounding area
+            cropCtx.drawImage(
+              srcCanvas,
+              Math.round(ann.x), Math.round(ann.y), Math.round(ann.width), Math.round(ann.height),
+              0, 0, 224, 224
+            );
+
+            // 2. Draw crisp character centered with exact aspect ratio
+            cropCtx.drawImage(
+              srcCanvas,
+              Math.round(ann.x), Math.round(ann.y), Math.round(ann.width), Math.round(ann.height),
+              dx, dy, dw, dh
+            );
+
+            const cropBlob = await new Promise(res => cropCanvas.toBlob(res, 'image/png'));
+            rootFolder.folder(folderName).file(`${folderName}_${String(counts[folderName]).padStart(4, '0')}.png`, cropBlob);
+          }
+        }
+
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(zipBlob);
+        a.download = 'real_nabataean_dataset_crops.zip';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+
+        showToast(`✅ تم قص وتصدير ${totalBoxes} حرف في مجلدات ZIP منظمة بنجاح!`, 'success');
+      }
+
+      document.getElementById('btnDirectSaveTxt').onclick = saveLabelsTxt;
+      document.getElementById('btnDoExportYOLO').onclick = saveLabelsTxt;
+      document.getElementById('btnExportCrops').onclick = exportCroppedCharacters;
+
+      // Keyboard Shortcuts for Moving, Resizing, and Shaping
+      window.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+          e.preventDefault();
+          saveLabelsTxt();
+          return;
+        }
+
+        if (e.key === 'Delete' || e.key === 'Backspace') {
+          if (state.selectedAnn) {
+            state.annotations = state.annotations.filter(a => a.id !== state.selectedAnn.id);
+            state.selectedAnn = null;
+            if (state.images[state.currentImageIndex]) state.images[state.currentImageIndex].annotations = state.annotations;
+            updateAnnotationsUI(); updateThumbnails(); render();
+          }
+          return;
+        }
+
+        // Arrow keys to move or resize selected bounding box
+        if (state.selectedAnn && ['arrowleft', 'arrowright', 'arrowup', 'arrowdown'].includes(e.key.toLowerCase())) {
+          e.preventDefault();
+          const step = e.shiftKey ? 10 : 1;
+          const k = e.key.toLowerCase();
+
+          if (e.altKey || e.ctrlKey) {
+            // Alt / Ctrl + Arrow = Expand / Shrink Size
+            if (k === 'arrowright') state.selectedAnn.width = Math.max(4, state.selectedAnn.width + step);
+            if (k === 'arrowleft') state.selectedAnn.width = Math.max(4, state.selectedAnn.width - step);
+            if (k === 'arrowdown') state.selectedAnn.height = Math.max(4, state.selectedAnn.height + step);
+            if (k === 'arrowup') state.selectedAnn.height = Math.max(4, state.selectedAnn.height - step);
+          } else {
+            // Arrow = Move Box
+            if (k === 'arrowright') state.selectedAnn.x += step;
+            if (k === 'arrowleft') state.selectedAnn.x -= step;
+            if (k === 'arrowdown') state.selectedAnn.y += step;
+            if (k === 'arrowup') state.selectedAnn.y -= step;
+          }
+
+          if (state.images[state.currentImageIndex]) state.images[state.currentImageIndex].annotations = state.annotations;
+          updateSelectedBoxInspector();
+          render();
+        }
+
+        // Quick Tool Switching Hotkeys
+        if (e.key.toLowerCase() === 'v') setTool('select');
+        if (e.key.toLowerCase() === 'r') setTool('rect');
+        if (e.key.toLowerCase() === 'h') setTool('pan');
+      });
+
+      document.getElementById('btnDoExportImage').onclick = () => {
+        if (!processedCanvas) return;
+        processedCanvas.toBlob(blob => {
+          const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+          a.download = 'enhanced_inscription.png';
+          a.click();
+          showToast('تم حفظ الصورة بدقة عالية', 'success');
+        });
+      };
+
+      document.getElementById('btnDoExportCrops').onclick = async () => {
+        if (state.annotations.length === 0) { showToast('لا توجد توسيمات لقصها', 'error'); return; }
+        if (typeof JSZip === 'undefined') { showToast('جاري تحميل JSZip...', 'info'); return; }
+        const zip = new JSZip();
+        state.annotations.forEach((ann, i) => {
+          const cropC = document.createElement('canvas');
+          cropC.width = ann.width; cropC.height = ann.height;
+          cropC.getContext('2d').drawImage(processedCanvas, ann.x, ann.y, ann.width, ann.height, 0, 0, ann.width, ann.height);
+          const dUrl = cropC.toDataURL('image/png').split(',')[1];
+          zip.folder(`class_${ann.classId}`).file(`crop_${i}_${ann.classId}.png`, dUrl, { base64: true });
+        });
+        const blob = await zip.generateAsync({ type: 'blob' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = `nabataean_crops_${Date.now()}.zip`;
+        a.click();
+        showToast(`تم تصدير ${state.annotations.length} مقتطف في ملف ZIP`, 'success');
+      };
+
+      // Ancient Semitic Glyph & Arabic Mapping Helper
+      function getGlyphAndArabic(name) {
+        const aramaicMap = {
+          'ARAMAIC_ALEPH': { char: '𐡀', ar: 'ألف آرامية' },
+          'ARAMAIC_BETH': { char: '𐡁', ar: 'باء آرامية' },
+          'ARAMAIC_GIMEL': { char: '𐡂', ar: 'جيم آرامية' },
+          'ARAMAIC_DALETH': { char: '𐡃', ar: 'دال آرامية' },
+          'ARAMAIC_HE': { char: '𐡄', ar: 'هاء آرامية' },
+          'ARAMAIC_WAW': { char: '𐡅', ar: 'واو آرامية' },
+          'ARAMAIC_ZAYIN': { char: '𐡆', ar: 'زاي آرامية' },
+          'ARAMAIC_HETH': { char: '𐡇', ar: 'حاء آرامية' },
+          'ARAMAIC_TETH': { char: '𐡈', ar: 'طاء آرامية' },
+          'ARAMAIC_YODH': { char: '𐡉', ar: 'ياء آرامية' },
+          'ARAMAIC_KAPH': { char: '𐡊', ar: 'كاف آرامية' },
+          'ARAMAIC_LAMEDH': { char: '𐡋', ar: 'لام آرامية' },
+          'ARAMAIC_MEM': { char: '𐡌', ar: 'ميم آرامية' },
+          'ARAMAIC_NUN': { char: '𐡍', ar: 'نون آرامية' },
+          'ARAMAIC_SAMEKH': { char: '𐡎', ar: 'سين آرامية' },
+          'ARAMAIC_AYIN': { char: '𐡏', ar: 'عين آرامية' },
+          'ARAMAIC_PE': { char: '𐡐', ar: 'فاء آرامية' },
+          'ARAMAIC_SADHE': { char: '𐡑', ar: 'صاد آرامية' },
+          'ARAMAIC_QOPH': { char: '𐡒', ar: 'قاف آرامية' },
+          'ARAMAIC_RESH': { char: '𐡓', ar: 'راء آرامية' },
+          'ARAMAIC_SHIN': { char: '𐡔', ar: 'شين آرامية' },
+          'ARAMAIC_TAW': { char: '𐡕', ar: 'تاء آرامية' }
+        };
+        if (aramaicMap[name]) return aramaicMap[name];
+
+        const clean = name.replace(/^NABATAEAN_/, '');
+        const found = NABATAEAN_CLASSES.find(c => c.name_ar && (clean.includes(c.name_ar) || c.id === parseInt(name)));
+        if (found) return { char: found.char, ar: found.name_ar };
+
+        return { char: '𐢀', ar: name };
+      }
+
+      // AI Inspection & Accuracy Reporter Handler (Stage 2 YOLOv8 Model)
+      const btnAiAuto = document.getElementById('btnAiAutoDetect');
+      const aiBtnText = document.getElementById('aiBtnText');
+      const aiSlider = document.getElementById('aiConfSlider');
+
+      if (btnAiAuto) {
+        btnAiAuto.onclick = async function() {
+          if (!state.images || state.currentImageIndex < 0 || !state.images[state.currentImageIndex]) {
+            showToast('يرجى اختيار أو رفع صورة نقش أولاً!', 'error');
+            return;
+          }
+
+          const currentImg = state.images[state.currentImageIndex];
+          const confValue = (parseFloat(aiSlider ? aiSlider.value : 4) / 100.0) || 0.04;
+
+          // Visual loading state
+          btnAiAuto.disabled = true;
+          if (aiBtnText) aiBtnText.innerText = 'جاري الفحص... ⏳';
+          btnAiAuto.style.opacity = '0.7';
+
+          try {
+            // FIX: currentImg.canvas is the valid canvas
+            const imgCanvas = currentImg.canvas || currentImg;
+            const b64 = imgCanvas.toDataURL('image/jpeg', 0.95);
+
+            const response = await fetch(`http://127.0.0.1:5005/predict?conf=${confValue}&imgsz=640`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ image: b64, conf: confValue })
+            });
+
+            if (!response.ok) {
+              throw new Error(`خطأ في الخادم (${response.status})`);
+            }
+
+            const result = await response.json();
+            if (result.status !== 'success') {
+              throw new Error(result.message || 'فشل الفحص');
+            }
+
+            const detections = result.detections || [];
+            if (detections.length === 0) {
+              showToast(`لم يعثر الموديل على حروف بحساسية ${Math.round(confValue * 100)}%. جرب خفض الحساسية بالسلايدر.`, 'warning');
+              return;
+            }
+
+            // Sort detections horizontally (from right-to-left for Semitic script reading)
+            const sortedByPos = [...detections].sort((a, b) => (b.box.x - a.box.x));
+            
+            // Build Detected Glyphs & Arabic string
+            const glyphsArr = [];
+            const arabicArr = [];
+            const listEl = document.getElementById('aiDetectionsList');
+            if (listEl) listEl.innerHTML = '';
+
+            const topConf = Math.round(detections[0].confidence * 100);
+
+            detections.forEach((det, idx) => {
+              const info = getGlyphAndArabic(det.class_name);
+              glyphsArr.push(info.char);
+              arabicArr.push(info.ar);
+
+              // Add card to modal list
+              if (listEl) {
+                const confPercent = Math.round(det.confidence * 100);
+                const confColor = confPercent >= 50 ? '#00f5d4' : confPercent >= 20 ? '#ffbe0b' : '#c77dff';
+                const card = document.createElement('div');
+                card.style.cssText = 'display: flex; align-items: center; justify-content: space-between; background: #131924; border: 1px solid var(--border-card); border-radius: 6px; padding: 6px 12px;';
+                card.innerHTML = `
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-family: var(--font-nabataean); font-size: 1.4rem; color: ${confColor}; min-width: 25px; text-align: center;">${info.char}</span>
+                    <div>
+                      <div style="font-weight: 700; font-size: 0.78rem; color: #fff;">${info.ar} <span style="font-size: 0.65rem; color: #94a3b8; font-family: var(--font-mono);">(${det.class_name})</span></div>
+                      <div style="font-size: 0.65rem; color: #64748b; font-family: var(--font-mono);">موقع الصندوق: x:${det.box.x}, y:${det.box.y} (العرض:${det.box.width} × الارتفاع:${det.box.height})</div>
+                    </div>
+                  </div>
+                  <div style="text-align: right;">
+                    <span style="font-family: var(--font-mono); font-weight: 800; font-size: 0.85rem; color: ${confColor};">${det.confidence_percent}%</span>
+                    <div style="width: 70px; height: 4px; background: #222f46; border-radius: 2px; overflow: hidden; margin-top: 3px;">
+                      <div style="width: ${confPercent}%; height: 100%; background: ${confColor};"></div>
+                    </div>
+                  </div>
+                `;
+                listEl.appendChild(card);
+              }
+            });
+
+            // Update Modal Headers
+            const glyphsBox = document.getElementById('aiDetectedGlyphs');
+            const arabicBox = document.getElementById('aiDetectedArabic');
+            const countBox = document.getElementById('aiSummaryCount');
+            if (glyphsBox) glyphsBox.textContent = glyphsArr.slice(0, 12).join('  ');
+            if (arabicBox) arabicBox.textContent = arabicArr.slice(0, 12).join(' - ');
+            if (countBox) countBox.textContent = `إجمالي الحروف المكتشفة: ${detections.length} حرفاً (أعلى دقة: ${topConf}%)`;
+
+            // Save detections in memory in case user clicks Apply
+            window.lastAiDetections = detections;
+
+            // Open Modal
+            const aiModal = document.getElementById('aiResultsModal');
+            if (aiModal) aiModal.classList.add('show');
+
+            // Wire up Apply Boxes button
+            const applyBtn = document.getElementById('btnApplyAiBoxes');
+            if (applyBtn) {
+              applyBtn.onclick = function() {
+                if (!window.lastAiDetections || window.lastAiDetections.length === 0) return;
+                window.lastAiDetections.forEach((det, idx) => {
+                  let cid = det.class_id;
+                  let existing = state.classes.find(c => c.id === cid);
+                  if (!existing) {
+                    const info = getGlyphAndArabic(det.class_name);
+                    state.classes.push({ id: cid, char: info.char, name_ar: info.ar });
+                    renderCharGrid();
+                  }
+                  const newAnn = {
+                    id: `ann_ai_${Date.now()}_${idx}`,
+                    x: Math.round(det.box.x),
+                    y: Math.round(det.box.y),
+                    width: Math.round(det.box.width),
+                    height: Math.round(det.box.height),
+                    classId: cid,
+                    confidence: det.confidence,
+                    isAi: true
+                  };
+                  state.annotations.push(newAnn);
+                });
+                if (state.images[state.currentImageIndex]) {
+                  state.images[state.currentImageIndex].annotations = state.annotations;
+                }
+                updateAnnotationsUI();
+                updateThumbnails();
+                render();
+                if (aiModal) aiModal.classList.remove('show');
+                showToast(`📥 تم رسم ${window.lastAiDetections.length} صندوقاً على الكانفاس!`, 'success');
+              };
+            }
+
+            // Wire up Close buttons
+            const closeBtn = document.getElementById('btnCloseAiModal');
+            const dismissBtn = document.getElementById('btnDismissAiModal');
+            if (closeBtn) closeBtn.onclick = () => aiModal && aiModal.classList.remove('show');
+            if (dismissBtn) dismissBtn.onclick = () => aiModal && aiModal.classList.remove('show');
+
+            // Bottom Toast Notification
+            showToast(`🤖 تم فحص النقش: تم اكتشاف ${detections.length} حرفاً بدقة تصل إلى ${topConf}%!`, 'success');
+
+          } catch (err) {
+            console.error('AI Auto-Label Error:', err);
+            showToast(`تعذر الاتصال بخدمة الذكاء الاصطناعي. تأكد من تشغيل ai_service.py: ${err.message}`, 'error');
+          } finally {
+            btnAiAuto.disabled = false;
+            if (aiBtnText) aiBtnText.innerText = 'توسيم ذكي (AI)';
+            btnAiAuto.style.opacity = '1';
+          }
+        };
+      }
+
+      // Initialize & Setup Demo Inscription
+      const resize = () => {
+        const c = document.getElementById('canvasContainer');
+        canvas.width = c.clientWidth;
+        canvas.height = c.clientHeight;
+        render();
+      };
+      window.onresize = resize;
+      resize();
+      renderCharGrid();
+
+      // Demo Rock Inscription Canvas
+      const demoC = document.createElement('canvas');
+      demoC.width = 820; demoC.height = 460;
+      const dCtx = demoC.getContext('2d');
+      dCtx.fillStyle = '#221b16'; dCtx.fillRect(0, 0, 820, 460);
+      for (let i = 0; i < 500; i++) {
+        dCtx.fillStyle = `rgba(${110 + Math.random()*50}, ${80 + Math.random()*40}, ${50 + Math.random()*30}, ${0.1 + Math.random()*0.25})`;
+        dCtx.fillRect(Math.random()*820, Math.random()*460, 2 + Math.random()*4, 2 + Math.random()*4);
+      }
+      dCtx.fillStyle = '#100c09';
+      dCtx.font = 'bold 50px "Noto Sans Nabataean", "Segoe UI Historic", sans-serif';
+      dCtx.fillText('𐢀 𐢁 𐢃 𐢄 𐢅 𐢈 𐢊 𐢍', 80, 180);
+      dCtx.fillText('𐢏 𐢑 𐢓 𐢕 𐢗 𐢚 𐢛 𐢞', 80, 300);
+
+      addImage(demoC, 'nabataean_stone_inscription.jpg');
+
+      // Sample boxes matching Nabataean glyphs
+      state.annotations = [
+        { id: 'ann_0', x: 65, y: 125, width: 62, height: 75, classId: 0 },
+        { id: 'ann_1', x: 145, y: 125, width: 58, height: 75, classId: 1 },
+        { id: 'ann_2', x: 220, y: 125, width: 58, height: 75, classId: 3 },
+        { id: 'ann_3', x: 300, y: 125, width: 60, height: 75, classId: 4 },
+        { id: 'ann_4', x: 65, y: 245, width: 60, height: 75, classId: 15 },
+        { id: 'ann_5', x: 145, y: 245, width: 60, height: 75, classId: 17 }
+      ];
+      if (state.images[0]) state.images[0].annotations = state.annotations;
+      updateAnnotationsUI();
+      updateThumbnails();
+      render();
+
+    })();
+  </script>
+</body>
+</html>
